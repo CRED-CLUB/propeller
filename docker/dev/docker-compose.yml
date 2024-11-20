@@ -1,0 +1,40 @@
+version: '3'
+services:
+  nats:
+    image: nats:alpine3.15
+    container_name: nats
+    ports:
+      - '4222:4222'
+    networks:
+      - dev_propeller-network
+  redis:
+    image: 'bitnami/redis:6.2.7'
+    container_name: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+    networks:
+      - dev_propeller-network
+  propeller:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: propeller
+    environment:
+      - BROKER_REDIS_ADDRESS=redis:6379
+      - BROKER_NATS_URL=nats:4222
+    ports:
+      - "8081:8081"
+      - "5011:5011"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "8081" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: on-failure
+    networks:
+      - dev_propeller-network
+networks:
+  dev_propeller-network:
+    external: false

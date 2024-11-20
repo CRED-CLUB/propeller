@@ -2,11 +2,20 @@ version: '3'
 services:
   nats:
     image: nats:alpine3.15
+    container_name: nats
     ports:
-    - '4222:4222'
+      - '4222:4222'
+    networks:
+      - dev_propeller-network
   redis:
-      image: 'bitnami/redis:6.2.7'
-      environment:
-        - ALLOW_EMPTY_PASSWORD=yes
-      ports:
-        - '6379:6379'
+    image: 'bitnami/redis:6.2.7'
+    container_name: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+    networks:
+      - dev_propeller-network
+networks:
+  dev_propeller-network:
+    external: false

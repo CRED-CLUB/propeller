@@ -13,13 +13,12 @@ BUF_BINARY_NAME := buf
 BUF_UNAME_OS := $(shell uname -s)
 BUF_UNAME_ARCH := $(shell uname -m)
 
-BINARY_OUT       := "bin/propeller"
+BIN_PATH := "bin/"
+BINARY_OUT := "propeller"
 MAIN_PACKAGE_PATH := "github.com/CRED-CLUB/propeller/cmd/service"
 
-CLIENT_BINARY_OUT := "bin/propeller-client"
+CLIENT_BINARY_OUT := "propeller-client"
 CLIENT_PACKAGE_PATH := "github.com/CRED-CLUB/propeller/cmd/client"
-PERF_CLIENT_BINARY_OUT := "bin/propeller-perf-client"
-PERF_CLIENT_PACKAGE_PATH := "github.com/CRED-CLUB/propeller/cmd/client/perf"
 
 RPC_ROOT := "rpc/"
 
@@ -75,21 +74,31 @@ proto-lint:
 proto-clean:
 	@rm -rf $(RPC_ROOT)
 
+.PHONY: clean ## Clean all generated files
+clean: proto-clean
+	@rm -rf $(BIN_PATH)
+
 .PHONY: build ## Build the binary
 build:  proto-generate
-	GOOS=$(UNAME_OS) GOARCH=$(UNAME_ARCH) go build -v -o $(BINARY_OUT) $(MAIN_PACKAGE_PATH)
+	GOOS=$(UNAME_OS) GOARCH=$(UNAME_ARCH) go build -v -o $(BIN_PATH)$(BINARY_OUT) $(MAIN_PACKAGE_PATH)
 
 .PHONY: build-sample-client ## Build the test client binary
 build-sample-client:
-	GOOS=$(UNAME_OS) GOARCH=$(UNAME_ARCH) go build -v -o $(CLIENT_BINARY_OUT) $(CLIENT_PACKAGE_PATH)
+	GOOS=$(UNAME_OS) GOARCH=$(UNAME_ARCH) go build -v -o $(BIN_PATH)$(CLIENT_BINARY_OUT) $(CLIENT_PACKAGE_PATH)
 
-
-
-.PHONY: dev-dependencies-up ## Bring up the dependencies
+.PHONY: dev-dependencies-up ## Bring up the dependencies (redis, NATS)
 dev-dependencies-up:
 	docker compose -f docker/dev/docker-compose-dependencies.yml up -d
 
-.PHONY: dev-dependencies-down ## Bring down the dependencies
+.PHONY: docker-down ## Bring down the propeller docker
+docker-down:
+	docker compose -f docker/dev/docker-compose.yml down
+
+.PHONY: docker-up ## Bring up the propeller docker
+docker-up:
+	docker compose -f docker/dev/docker-compose.yml up -d
+
+.PHONY: dev-dependencies-down ## Bring down the dependencies (redis, NATS)
 dev-dependencies-down:
 	docker compose -f docker/dev/docker-compose-dependencies.yml down
 

@@ -14,9 +14,6 @@ RUN make build
 ######################################
 FROM golang:1.21.13
 
-EXPOSE 5001
-EXPOSE 8081
-
 ENV BINPATH /bin
 ENV WORKDIR $BINPATH
 WORKDIR $BINPATH/
