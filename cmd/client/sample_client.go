@@ -187,8 +187,7 @@ func connect(ctx context.Context, userID string, c pushv1.PushServiceClient, sub
 
 		req = &pushv1.ChannelRequest{Request: &pushv1.ChannelRequest_TopicUnsubscriptionRequest{TopicUnsubscriptionRequest: &pushv1.TopicUnsubscriptionRequest{Topic: subTopic}}}
 		if err := stream.Send(req); err != nil {
-			log.Fatalf("cannot uns"+
-				"ubscribe %v", err)
+			log.Fatalf("cannot unsubscribe %v", err)
 		}
 
 		log.Printf("un-subscribing")
