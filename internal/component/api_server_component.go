@@ -2,6 +2,7 @@ package component
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/CRED-CLUB/propeller/internal/component/apiserver"
@@ -19,10 +20,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	grpctrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/google.golang.org/grpc"
-)
-
-const (
-	httpAddr = ":8081"
 )
 
 // NewAPIServer returns a component instance
@@ -104,7 +101,7 @@ func (web *APIServer) Start(ctx context.Context) error {
 		err := s.Run(gctx)
 		return err
 	})
-	httpSrv := &http.Server{Addr: httpAddr}
+	httpSrv := &http.Server{Addr: fmt.Sprintf(":%s", (web.config.HTTP.Port))}
 	ws := apiserver.WebSocketServerWrapper{PushServer: pushGrpcService, Ctx: cancelCtx, CancelFunc: cancelFunc}
 	grp.Go(func() error {
 		m := http.NewServeMux()

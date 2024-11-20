@@ -4,6 +4,7 @@ import (
 	"github.com/CRED-CLUB/propeller/internal/broker"
 	"github.com/CRED-CLUB/propeller/internal/feature"
 	"github.com/CRED-CLUB/propeller/internal/grpcserver"
+	"github.com/CRED-CLUB/propeller/internal/httpserver"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 )
 
@@ -20,4 +21,5 @@ type Config struct {
 	ClientHeader           string
 	DeviceHeader           string
 	EnableDeviceSupport    bool
+	HTTP                   httpserver.HTTPConfig
 }

@@ -30,3 +30,5 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
     [Features.SampleFeature]
         Enabled = true
         RolloutPercentage = 100
+[Http]
+    Port = "8081"
