@@ -22,8 +22,8 @@ title: propeller
 email: abhishekvrshny@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   propeller is an opinionated push platform for realtime streaming between clients (mobile apps) and backend services 
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: /propeller/ # the subpath of your site, e.g. /blog
+url: https://cred-club.github.io/ # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: abhishekvrshny
 github_username:  abhishekvrshny
 
