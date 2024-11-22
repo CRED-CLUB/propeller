@@ -120,10 +120,9 @@ func (sm *SendEventToTopicsRequest) PopulateFromProto(ctx context.Context, proto
 }
 
 func getDummySendEventToClientRequest(clientID string) SendEventToClientChannelRequest {
-	dummy.GetDummyEvent("dummy", getDummyJSONBytes())
 	req := SendEventToClientChannelRequest{
 		clientID: clientID,
-		event:    dummy.GetDummyEvent("dummy", getDummyJSONBytes()),
+		event:    dummy.GetDummyEvent("dummy-client", getDummyJSONBytes()),
 	}
 	return req
 }
@@ -132,7 +131,7 @@ func getDummySendEventToClientDeviceRequest(clientID, deviceID string) SendEvent
 	req := SendEventToClientDeviceChannelRequest{
 		clientID: clientID,
 		deviceID: deviceID,
-		event:    dummy.GetDummyEvent("dummy", getDummyJSONBytes()),
+		event:    dummy.GetDummyEvent("dummy-device", getDummyJSONBytes()),
 	}
 	return req
 

@@ -13,12 +13,13 @@ import (
 
 // Streams provide redis streams implementation
 type Streams struct {
-	c *Client
+	c             *Client
+	cancelFuncMap map[string]context.CancelFunc
 }
 
 // NewStreams returns redis Streams
 func NewStreams(c *Client) *Streams {
-	return &Streams{c}
+	return &Streams{c, make(map[string]context.CancelFunc)}
 }
 
 // Publish message to redis
@@ -26,7 +27,7 @@ func (ss Streams) Publish(ctx context.Context, request PublishRequest) error {
 	v := map[string]interface{}{"data": request.Data}
 
 	err := ss.c.client.XAdd(ctx, &redis.XAddArgs{
-		Stream: request.Channel,
+		Stream: fmt.Sprintf("%s-stream", request.Channel),
 		MaxLen: 0,
 		Values: v,
 	}).Err()
@@ -46,7 +47,7 @@ func (ss Streams) PublishBulk(ctx context.Context, publishRequests []PublishRequ
 	for _, request := range publishRequests {
 		v := map[string]interface{}{"data": request.Data}
 		err := pipeline.XAdd(ctx, &redis.XAddArgs{
-			Stream: request.Channel,
+			Stream: fmt.Sprintf("%s-stream", request.Channel),
 			MaxLen: 0,
 			Values: v,
 		}).Err()
@@ -70,27 +71,34 @@ func (ss Streams) PublishBulk(ctx context.Context, publishRequests []PublishRequ
 
 // Subscribe to a redis stream
 func (ss Streams) Subscribe(ctx context.Context, channel ...string) ISubscription {
+	channels := make([]string, len(channel))
+	for i, c := range channel {
+		channels[i] = fmt.Sprintf("%s-stream", c)
+	}
 	StreamSubscription := StreamSubscription{
 		Streams: ss,
 		baseSubscription: baseSubscription{
 			dataChan: make(chan []byte),
-			topics:   channel,
+			topics:   channels,
 		},
-		channel: channel,
 	}
-	go StreamSubscription.start(ctx)
+	go StreamSubscription.start(ctx, channels...)
 	return StreamSubscription
 }
 
 // RemoveSubscription ...
 func (ss Streams) RemoveSubscription(ctx context.Context, channel string, s ISubscription) error {
-	//TODO: implement
+	ss.cancelFuncMap[channel]()
 	return nil
 }
 
 // AddSubscription ...
 func (ss Streams) AddSubscription(ctx context.Context, channel string, s ISubscription) error {
-	//TODO: implement
+	// TODO: implement
+	channels := []string{fmt.Sprintf("%s-stream", channel)}
+	newCtx, cancelFunc := context.WithCancel(ctx)
+	ss.cancelFuncMap[channel] = cancelFunc
+	go s.(StreamSubscription).start(newCtx, channels...)
 	return nil
 }
 
@@ -103,17 +111,16 @@ func (ss Streams) UnSubscribe(ctx context.Context, s ISubscription) error {
 type StreamSubscription struct {
 	Streams
 	baseSubscription
-	channel []string
 }
 
-func (st StreamSubscription) start(ctx context.Context) {
+func (st StreamSubscription) start(ctx context.Context, channels ...string) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
-			streams, err := st.Streams.c.client.XRead(ctx, &redis.XReadArgs{
-				Streams: append(st.channel, "0"),
+			resultStreams, err := st.Streams.c.client.XRead(ctx, &redis.XReadArgs{
+				Streams: append(channels, "0"),
 				Count:   1,
 				Block:   60 * time.Second,
 			}).Result()
@@ -124,12 +131,11 @@ func (st StreamSubscription) start(ctx context.Context) {
 				logger.Ctx(ctx).Errorw("error is", "err", err)
 				return
 			}
-			for _, stream := range streams[0].Messages {
+			for _, stream := range resultStreams[0].Messages {
 				var msg []byte
 				msg = []byte(stream.Values["data"].(string))
 				st.dataChan <- msg
-				for _, chh := range st.channel {
-					logger.Ctx(ctx).Infow("received message", "channel", chh, "message", string(msg))
+				for _, chh := range channels {
 					_, err := st.Streams.c.client.XDel(ctx, chh, stream.ID).Result()
 					if err != nil {
 						logger.Ctx(ctx).Infow("error deleting", "err", err.Error())
