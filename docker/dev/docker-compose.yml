@@ -24,8 +24,9 @@ services:
       dockerfile: Dockerfile
     container_name: propeller
     environment:
-      - BROKER_REDIS_ADDRESS=redis:6379
-      - BROKER_NATS_URL=nats:4222
+      - PROPELLER_BROKER_REDIS_ADDRESS=redis:6379
+      - PROPELLER_BROKER_NATS_URL=nats:4222
+      - PROPELLER_CONFIG_FILE_PATH=/etc
     ports:
       - "8081:8081"
       - "5011:5011"

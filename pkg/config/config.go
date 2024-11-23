@@ -24,8 +24,8 @@ import (
 const (
 	DefaultConfigType     = "toml"
 	DefaultConfigDir      = "./config"
-	DefaultConfigFileName = "default"
-	WorkDirEnv            = "WORKDIR"
+	DefaultConfigFileName = "propeller"
+	FilePath              = "PROPELLER_CONFIG_FILE_PATH"
 )
 
 // Options is config options.
@@ -56,9 +56,9 @@ type Config struct {
 // only at build time
 func NewDefaultOptions() Options {
 	var configPath string
-	workDir := os.Getenv(WorkDirEnv)
-	if workDir != "" {
-		configPath = path.Join(workDir, DefaultConfigDir)
+	filePath := os.Getenv(FilePath)
+	if filePath != "" {
+		configPath = path.Join(filePath)
 	} else {
 		_, thisFile, _, _ := runtime.Caller(1)
 		configPath = path.Join(path.Dir(thisFile), "../../"+DefaultConfigDir)
@@ -89,7 +89,7 @@ func (c *Config) Load(fileName string, config interface{}) error {
 
 // loadByConfigName reads configuration from file and unmarshalls into config.
 func (c *Config) loadByConfigName(configName string, config interface{}) error {
-	c.viper.SetEnvPrefix(strings.ToUpper(""))
+	c.viper.SetEnvPrefix(strings.ToUpper("PROPELLER"))
 	c.viper.SetConfigName(configName)
 	c.viper.SetConfigType(c.opts.configType)
 	c.viper.AddConfigPath(c.opts.configPath)

@@ -15,11 +15,10 @@ RUN make build
 FROM golang:1.21.13
 
 ENV BINPATH /bin
-ENV WORKDIR $BINPATH
 WORKDIR $BINPATH/
 
 COPY --from=builder /src/bin/propeller $BINPATH
-COPY config/ $BINPATH/config/
+COPY --from=builder /src/config/propeller.toml /etc/propeller.toml
 
 RUN rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get update
 

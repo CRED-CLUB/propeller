@@ -96,7 +96,7 @@ docker-down:
 
 .PHONY: docker-up ## Bring up the propeller docker
 docker-up:
-	docker compose -f docker/dev/docker-compose.yml up -d
+	docker compose -f docker/dev/docker-compose.yml up --build -d
 
 .PHONY: dev-dependencies-down ## Bring down the dependencies (redis, NATS)
 dev-dependencies-down:
