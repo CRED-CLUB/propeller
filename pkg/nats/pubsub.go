@@ -35,25 +35,40 @@ func (s PubSub) Publish(ctx context.Context, request PublishRequest) error {
 }
 
 // UnSubscribe a subscriber
-func (s PubSub) UnSubscribe(ctx context.Context, subscription *nats.Subscription) error {
-	err := subscription.Unsubscribe()
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "unable to unsubscribe %w", err)
+func (s PubSub) UnSubscribe(ctx context.Context, subscription ISubscription) error {
+	switch subscription := subscription.(type) {
+	case *PubSubSubscription:
+		err := subscription.subs.Unsubscribe()
+		if err != nil {
+			pErr := perror.Newf(perror.Internal, "unable to unsubscribe %w", err)
+			logger.Ctx(ctx).Error(pErr.Error())
+			return pErr
+		}
+		return nil
+	default:
+		pErr := perror.Newf(perror.Internal, "invalid subscription type: %T", subscription)
 		logger.Ctx(ctx).Error(pErr.Error())
 		return pErr
 	}
-	return nil
 }
 
 // Subscribe to a subject
-func (s PubSub) Subscribe(ctx context.Context, f func(msg *nats.Msg), subject string) (*nats.Subscription, error) {
-	subs, err := s.c.conn.Subscribe(subject, f)
+func (s PubSub) Subscribe(ctx context.Context, subject string) (ISubscription, error) {
+	ps := &PubSubSubscription{
+		baseSubscription: baseSubscription{
+			dataChan: make(chan []byte),
+			topics:   subject,
+		},
+		subs: nil,
+	}
+	subs, err := s.c.conn.Subscribe(subject, ps.handlerFunc)
 	if err != nil {
 		pErr := perror.Newf(perror.Internal, "error in creating subscription %w", err)
 		logger.Ctx(ctx).Error(pErr.Error())
 		return nil, pErr
 	}
-	return subs, nil
+	ps.subs = subs
+	return ps, nil
 }
 
 // NewEmbeddedServer start an embedded NATS server for stage/testing
@@ -73,4 +88,14 @@ func NewEmbeddedServer(ctx context.Context) (string, error) {
 		return "", pErr
 	}
 	return ns.ClientURL(), nil
+}
+
+// PubSubSubscription ...
+type PubSubSubscription struct {
+	baseSubscription
+	subs *nats.Subscription
+}
+
+func (ps PubSubSubscription) handlerFunc(msg *nats.Msg) {
+	ps.dataChan <- msg.Data
 }

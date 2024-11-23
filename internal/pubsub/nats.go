@@ -9,7 +9,6 @@ import (
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 	natspkg "github.com/CRED-CLUB/propeller/pkg/nats"
 	"github.com/google/uuid"
-	"github.com/nats-io/nats.go"
 )
 
 // Nats is wrapper for nats pubsub
@@ -56,15 +55,26 @@ func (n *Nats) AsyncSubscribe(ctx context.Context, subject ...string) (*subscrip
 		ID:        id,
 	}
 
-	natsSubscription := natsSubscription{ctx, subs}
-	var natsSubscriptionList []*nats.Subscription
+	var natsSubscriptionList []natspkg.ISubscription
 
 	for _, s := range subject {
-		ns, err := n.natsClient.Subscribe(ctx, natsSubscription.asyncMessageHandler, s)
+		ns, err := n.natsClient.Subscribe(ctx, s)
 		if err != nil {
 			subs.ErrChan <- err
 			return nil, err
 		}
+		ch := ns.GetDataChan()
+		go func() {
+			for {
+				select {
+				case p := <-ch:
+					subs.EventChan <- p
+				case <-ctx.Done():
+					logger.Ctx(ctx).Debug("stopping subscriber loop")
+					return
+				}
+			}
+		}()
 		natsSubscriptionList = append(natsSubscriptionList, ns)
 		n.BasePubSub.Store(ctx, id.String(), natsSubscriptionList)
 	}
@@ -82,12 +92,23 @@ func (n *Nats) Unsubscribe(ctx context.Context, subs *subscription.Subscription)
 
 // AddSubscription ..
 func (n *Nats) AddSubscription(ctx context.Context, subject string, subs *subscription.Subscription) error {
-	natsSubscription := natsSubscription{ctx, subs}
-	ns, err := n.natsClient.Subscribe(ctx, natsSubscription.asyncMessageHandler, subject)
+	ns, err := n.natsClient.Subscribe(ctx, subject)
 	if err != nil {
 		subs.ErrChan <- err
 		return err
 	}
+	ch := ns.GetDataChan()
+	go func() {
+		for {
+			select {
+			case p := <-ch:
+				subs.EventChan <- p
+			case <-ctx.Done():
+				logger.Ctx(ctx).Debug("stopping subscriber loop")
+				return
+			}
+		}
+	}()
 	n.BasePubSub.Store(ctx, subject, ns)
 	return nil
 }
@@ -103,9 +124,9 @@ func (n *Nats) RemoveSubscription(ctx context.Context, subject string, subs *sub
 
 func (n *Nats) removeSubscription(ctx context.Context, v interface{}) error {
 	switch t := v.(type) {
-	case *nats.Subscription:
+	case natspkg.ISubscription:
 		return n.natsClient.UnSubscribe(ctx, t)
-	case []*nats.Subscription:
+	case []natspkg.ISubscription:
 		for _, sub := range t {
 			err := n.natsClient.UnSubscribe(ctx, sub)
 			if err != nil {
@@ -123,8 +144,4 @@ func (n *Nats) removeSubscription(ctx context.Context, v interface{}) error {
 type natsSubscription struct {
 	ctx          context.Context
 	subscription *subscription.Subscription
-}
-
-func (ns *natsSubscription) asyncMessageHandler(msg *nats.Msg) {
-	ns.subscription.EventChan <- msg.Data
 }

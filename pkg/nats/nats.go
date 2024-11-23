@@ -11,8 +11,8 @@ import (
 // INats is an interface over nats pubsub and jetstream
 type INats interface {
 	Publish(ctx context.Context, publishRequest PublishRequest) error
-	Subscribe(ctx context.Context, handler func(msg *nats.Msg), channel string) (*nats.Subscription, error)
-	UnSubscribe(ctx context.Context, s *nats.Subscription) error
+	Subscribe(ctx context.Context, channel string) (ISubscription, error)
+	UnSubscribe(ctx context.Context, s ISubscription) error
 }
 
 // Client holds the connection to NATS
@@ -29,4 +29,25 @@ func NewClient(ctx context.Context, config Config) (*Client, error) {
 		return nil, pErr
 	}
 	return &Client{nc}, err
+}
+
+type baseSubscription struct {
+	dataChan chan []byte
+	topics   string
+}
+
+// ISubscription is an interface for pubsub and stream subscriptions
+type ISubscription interface {
+	GetDataChan() chan []byte
+	GetTopics() string
+}
+
+// GetDataChan returns data channel
+func (baseSubscription baseSubscription) GetDataChan() chan []byte {
+	return baseSubscription.dataChan
+}
+
+// GetTopics returns topics for pubsub or streams
+func (baseSubscription baseSubscription) GetTopics() string {
+	return baseSubscription.topics
 }

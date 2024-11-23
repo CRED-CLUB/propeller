@@ -1,12 +1,14 @@
 version: '3'
 services:
   nats:
-    image: nats:alpine3.15
+    image: nats:2.10.22
     container_name: nats
     ports:
       - '4222:4222'
+      - '8222:8222'   # Monitoring port (optional)
     networks:
       - dev_propeller-network
+    command: ["-js"]  # Enable JetStream
   redis:
     image: 'bitnami/redis:6.2.7'
     container_name: redis

@@ -34,6 +34,10 @@ func New(ctx context.Context, config broker.Config) (IPubSub, error) {
 		}
 		switch config.Persistence {
 		case true:
+			psType, err = natspkg.NewJetStream(ctx, natsClient)
+			if err != nil {
+				return nil, err
+			}
 			logger.Ctx(ctx).Info("initialising NATS jetstream")
 		case false:
 			logger.Ctx(ctx).Info("initialising NATS pubsub")
