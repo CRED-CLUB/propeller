@@ -57,7 +57,7 @@ func (n *Nats) AsyncSubscribe(ctx context.Context, subject ...string) (*subscrip
 		ID:        id,
 	}
 
-	natsSubscription := &natsSubscription{ctx, subs}
+	natsSubscription := natsSubscription{ctx, subs}
 	var natsSubscriptionList []*nats.Subscription
 
 	for _, s := range subject {
@@ -77,28 +77,46 @@ func (n *Nats) Unsubscribe(ctx context.Context, subs *subscription.Subscription)
 	if err != nil {
 		return err
 	}
-	var ns *nats.Subscription
-	switch v.(type) {
-	case *nats.Subscription:
-		ns = v.(*nats.Subscription)
-	default:
-		pErr := perror.Newf(perror.Internal, "type not defined")
-		logger.Ctx(ctx).Error(pErr)
-		return pErr
-	}
-	return n.conn.Unsubscribe(ctx, ns)
+	return n.removeSubscription(ctx, v)
 }
 
 // AddSubscription ..
 func (n *Nats) AddSubscription(ctx context.Context, subject string, subs *subscription.Subscription) error {
-	//TODO: add implementation
+	natsSubscription := natsSubscription{ctx, subs}
+	ns, err := n.conn.AsyncSubscribe(ctx, subject, natsSubscription.asyncMessageHandler)
+	if err != nil {
+		subs.ErrChan <- err
+	}
+	n.BasePubSub.Store(ctx, subject, ns)
 	return nil
 }
 
 // RemoveSubscription ...
 func (n *Nats) RemoveSubscription(ctx context.Context, subject string, subs *subscription.Subscription) error {
-	//TODO: add implementation
-	return nil
+	v, err := n.BasePubSub.LoadAndDelete(ctx, subject)
+	if err != nil {
+		return err
+	}
+	return n.removeSubscription(ctx, v)
+}
+
+func (n *Nats) removeSubscription(ctx context.Context, v interface{}) error {
+	switch t := v.(type) {
+	case *nats.Subscription:
+		return n.conn.Unsubscribe(ctx, t)
+	case []*nats.Subscription:
+		for _, sub := range t {
+			err := n.conn.Unsubscribe(ctx, sub)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		pErr := perror.Newf(perror.Internal, "type not defined %s", t)
+		logger.Ctx(ctx).Error(pErr)
+		return pErr
+	}
 }
 
 type natsSubscription struct {
