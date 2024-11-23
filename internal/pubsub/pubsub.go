@@ -9,6 +9,7 @@ import (
 
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
+	natspkg "github.com/CRED-CLUB/propeller/pkg/nats"
 	redispkg "github.com/CRED-CLUB/propeller/pkg/redis"
 )
 
@@ -26,12 +27,19 @@ type IPubSub interface {
 func New(ctx context.Context, config broker.Config) (IPubSub, error) {
 	switch config.Broker {
 	case "nats":
-		conn, err := broker.NewNATSClient(ctx, config)
+		var psType natspkg.INats
+		natsClient, err := broker.NewNATSClient(ctx, config)
 		if err != nil {
 			return nil, err
 		}
-		logger.Ctx(ctx).Info("initialising nats pubsub")
-		return NewNats(conn), nil
+		switch config.Persistence {
+		case true:
+			logger.Ctx(ctx).Info("initialising NATS jetstream")
+		case false:
+			logger.Ctx(ctx).Info("initialising NATS pubsub")
+			psType = natspkg.NewPubSub(natsClient)
+		}
+		return NewNats(psType), nil
 	case "redis":
 		var psType redispkg.IRedis
 		redisClient, err := broker.NewRedisClient(ctx, config)

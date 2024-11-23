@@ -19,11 +19,11 @@ func NewNATSClient(ctx context.Context, config Config) (*natspkg.Client, error) 
 			return nil, err
 		}
 	}
-	conn, err := natspkg.NewClient(ctx, config.Nats)
+	natsClient, err := natspkg.NewClient(ctx, config.Nats)
 	if err != nil {
 		return nil, err
 	}
-	return conn, nil
+	return natsClient, nil
 }
 
 // NewRedisClient returns a redis client
