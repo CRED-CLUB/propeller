@@ -7,7 +7,6 @@ on:
 
 jobs:
   build-and-push:
-    needs: checks
     runs-on: ubuntu-latest
     name: build and publish
     steps:
@@ -28,5 +27,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: quay.io/abhishekvrshny/propeller:latest
