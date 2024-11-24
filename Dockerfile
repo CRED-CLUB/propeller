@@ -1,6 +1,6 @@
 # Stage 1 - build stage
 ######################################
-FROM golang:1.21.13 as builder
+FROM golang:1.23.3 as builder
 
 RUN mkdir -p /src
 WORKDIR /src
