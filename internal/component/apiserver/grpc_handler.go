@@ -73,9 +73,9 @@ func (ps *PushServer) Channel(srv pushv1.PushService_ChannelServer) error {
 			return nil
 		case err := <-clientSubscription.ErrChan:
 			logger.Ctx(loggerCtx).Errorw("error in subscriber", "error", err.Error())
-		case eventReceived := <-clientSubscription.EventChan:
+		case topicEventReceived := <-clientSubscription.TopicEventChan:
 			protoEvent := &pushv1.Event{}
-			err := proto.Unmarshal(eventReceived, protoEvent)
+			err := proto.Unmarshal(topicEventReceived.Event, protoEvent)
 			if err != nil {
 				logger.Ctx(loggerCtx).Errorf("error in converting to proto %v", err)
 				break
@@ -105,7 +105,7 @@ func (ps *PushServer) Channel(srv pushv1.PushService_ChannelServer) error {
 				break
 			}
 			err = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_ChannelEvent{
-				ChannelEvent: &pushv1.ChannelEvent{Event: protoEvent},
+				ChannelEvent: &pushv1.ChannelEvent{Event: protoEvent, Topic: topicEventReceived.Topic},
 			}})
 			if err != nil {
 				logger.Ctx(loggerCtx).Errorw("error in send", "error", err.Error())
@@ -279,16 +279,22 @@ func receiveLoop(ctx context.Context, rc chan *pushv1.ChannelRequest, srv pushv1
 	}
 }
 
-func (ps *PushServer) validateAndGetClientAndDeviceDetails(ctx context.Context) (clientID string, device push.Device, pErr error) {
+func (ps *PushServer) validateAndGetClientAndDeviceDetails(ctx context.Context) (clientID string, device *push.Device, pErr error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		pErr = perror.New(perror.InvalidArgument, "couldn't parse incoming context metadata")
 		logger.Ctx(ctx).Error(pErr)
-		return "", push.Device{}, pErr
+		return "", nil, pErr
+	}
+
+	if len(md.Get(ps.conf.ClientHeader)) <= 0 {
+		pErr = perror.New(perror.InvalidArgument, "couldn't parse client header")
+		logger.Ctx(ctx).Error(pErr)
+		return "", nil, pErr
 	}
 
 	clientID = md.Get(ps.conf.ClientHeader)[0]
-	device = push.Device{}
+	device = &push.Device{}
 
 	if ps.conf.EnableDeviceSupport {
 		attrs := make(map[string]string)
@@ -298,6 +304,11 @@ func (ps *PushServer) validateAndGetClientAndDeviceDetails(ctx context.Context) 
 			if len(headerValue) > 0 {
 				attrs[headerKey] = headerValue[0]
 			}
+		}
+		if len(md.Get(ps.conf.DeviceHeader)) <= 0 {
+			pErr = perror.New(perror.InvalidArgument, "couldn't parse device header")
+			logger.Ctx(ctx).Error(pErr)
+			return "", nil, pErr
 		}
 		device.ID = md.Get(ps.conf.DeviceHeader)[0]
 		device.Attributes = attrs

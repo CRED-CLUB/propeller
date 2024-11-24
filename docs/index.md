@@ -3,7 +3,7 @@ title: Home
 layout: home
 nav_order: 1
 ---
-# Overview
+# Propeller 𖣘
 Propeller is an *opinionated* platform that enabled realtime and bidirectional communication between frontend and backend clients.
 
 ## The Need

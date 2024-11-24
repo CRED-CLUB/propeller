@@ -5,12 +5,11 @@ import (
 	"sync"
 
 	"github.com/CRED-CLUB/propeller/internal/broker"
-	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
-
 	"github.com/CRED-CLUB/propeller/internal/perror"
+	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
+	natspkg "github.com/CRED-CLUB/propeller/pkg/broker/nats"
+	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
-	natspkg "github.com/CRED-CLUB/propeller/pkg/nats"
-	redispkg "github.com/CRED-CLUB/propeller/pkg/redis"
 )
 
 // IPubSub is pubsub interface

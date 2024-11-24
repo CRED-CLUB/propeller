@@ -1,6 +1,6 @@
 ServiceName = "propeller"
-SendTestPayload = true
-SendTestPayloadToTopic = true
+SendTestPayload = false
+SendTestPayloadToTopic = false
 ClientHeader = "x-user-id"
 EnableDeviceSupport = true
 DeviceHeader = "x-device-id"

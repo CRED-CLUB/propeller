@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
+	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
-	redispkg "github.com/CRED-CLUB/propeller/pkg/redis"
 )
 
 // Redis ...

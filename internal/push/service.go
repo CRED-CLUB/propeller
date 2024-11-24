@@ -156,9 +156,10 @@ func (c *Service) receiveDeviceResponse(ctx context.Context, s *subscription.Sub
 	receivedSoFar := 0
 	for {
 		select {
-		case msg := <-s.EventChan:
+		case topicEvent := <-s.TopicEventChan:
 			receivedSoFar++
 			protoEvent := &pushv1.Event{}
+			msg := topicEvent.Event
 			err := proto.Unmarshal(msg, protoEvent)
 			if err != nil {
 				return
@@ -230,7 +231,7 @@ func (c *Service) PublishToTopics(ctx context.Context, req SendEventToTopicsRequ
 }
 
 // AsyncClientSubscribe to the client
-func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, device Device) (*subscription.Subscription, error) {
+func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, device *Device) (*subscription.Subscription, error) {
 	logger.Ctx(ctx).Infow("subscribing to client", "clientID", clientID)
 	var clientSubscription *subscription.Subscription
 	var err error
@@ -240,7 +241,7 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 		return nil, err
 	}
 
-	if c.config.EnableDeviceSupport {
+	if c.config.EnableDeviceSupport && device != nil {
 		err = c.pubSub.AddSubscription(ctx, fmt.Sprintf("%s--%s", clientID, device.ID), clientSubscription)
 		if err != nil {
 			return nil, err
@@ -253,7 +254,9 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 
 	if c.config.SendTestPayload {
 		go c.triggerTestPayloadToClient(ctx, clientID)
-		go c.triggerTestPayloadToClientWithDevice(ctx, clientID, device.ID)
+		if device != nil {
+			go c.triggerTestPayloadToClientWithDevice(ctx, clientID, device.ID)
+		}
 	}
 
 	connectedClients.Inc()
@@ -282,7 +285,7 @@ func (c *Service) topicUnsubscribe(ctx context.Context, topic string, clientSubs
 }
 
 // ClientUnsubscribe unsubscribes a client
-func (c *Service) ClientUnsubscribe(ctx context.Context, clientID string, subscription *subscription.Subscription, device Device) error {
+func (c *Service) ClientUnsubscribe(ctx context.Context, clientID string, subscription *subscription.Subscription, device *Device) error {
 	if c.config.EnableDeviceSupport {
 		err := c.kv.Delete(ctx, clientID, device.ID)
 		if err != nil {

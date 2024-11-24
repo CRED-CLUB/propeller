@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 	"github.com/nats-io/nats.go/jetstream"
@@ -55,11 +57,11 @@ func (j *JetStream) Publish(ctx context.Context, request PublishRequest) error {
 }
 
 // Subscribe to jetstream topic
-func (j *JetStream) Subscribe(ctx context.Context, channel string) (ISubscription, error) {
+func (j *JetStream) Subscribe(ctx context.Context, channel string) (broker.ISubscription, error) {
 	js := &JetStreamSubscription{
-		baseSubscription: baseSubscription{
-			make(chan []byte),
-			channel,
+		BaseSubscription: broker.BaseSubscription{
+			make(chan broker.TopicEvent),
+			[]string{channel},
 		},
 		JetStream: *j,
 	}
@@ -98,7 +100,7 @@ func (j *JetStream) Subscribe(ctx context.Context, channel string) (ISubscriptio
 }
 
 // UnSubscribe from jetstream topic
-func (j *JetStream) UnSubscribe(ctx context.Context, s ISubscription) error {
+func (j *JetStream) UnSubscribe(ctx context.Context, s broker.ISubscription) error {
 	switch t := s.(type) {
 	case *JetStreamSubscription:
 		t.consumeContext.Stop()
@@ -112,13 +114,17 @@ func (j *JetStream) UnSubscribe(ctx context.Context, s ISubscription) error {
 
 // JetStreamSubscription ...
 type JetStreamSubscription struct {
-	baseSubscription
+	broker.BaseSubscription
 	JetStream
 	consumeContext jetstream.ConsumeContext
 }
 
 func (j *JetStreamSubscription) jetStreamMessageHandler(msg jetstream.Msg) {
-	j.dataChan <- msg.Data()
+	te := broker.TopicEvent{
+		Event: msg.Data(),
+		Topic: msg.Subject(),
+	}
+	j.TopicEventChan <- te
 	err := msg.Ack()
 	if err != nil {
 		pErr := perror.Newf(perror.Internal, "unable to ack JetStream msg: %s", err)

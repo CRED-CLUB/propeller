@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 	"github.com/nats-io/nats-server/v2/server"
@@ -35,7 +37,7 @@ func (s PubSub) Publish(ctx context.Context, request PublishRequest) error {
 }
 
 // UnSubscribe a subscriber
-func (s PubSub) UnSubscribe(ctx context.Context, subscription ISubscription) error {
+func (s PubSub) UnSubscribe(ctx context.Context, subscription broker.ISubscription) error {
 	switch subscription := subscription.(type) {
 	case *PubSubSubscription:
 		err := subscription.subs.Unsubscribe()
@@ -53,11 +55,11 @@ func (s PubSub) UnSubscribe(ctx context.Context, subscription ISubscription) err
 }
 
 // Subscribe to a subject
-func (s PubSub) Subscribe(ctx context.Context, subject string) (ISubscription, error) {
+func (s PubSub) Subscribe(ctx context.Context, subject string) (broker.ISubscription, error) {
 	ps := &PubSubSubscription{
-		baseSubscription: baseSubscription{
-			dataChan: make(chan []byte),
-			topics:   subject,
+		BaseSubscription: broker.BaseSubscription{
+			TopicEventChan: make(chan broker.TopicEvent),
+			Topics:         []string{subject},
 		},
 		subs: nil,
 	}
@@ -92,10 +94,14 @@ func NewEmbeddedServer(ctx context.Context) (string, error) {
 
 // PubSubSubscription ...
 type PubSubSubscription struct {
-	baseSubscription
+	broker.BaseSubscription
 	subs *nats.Subscription
 }
 
 func (ps PubSubSubscription) handlerFunc(msg *nats.Msg) {
-	ps.dataChan <- msg.Data
+	te := broker.TopicEvent{
+		Event: msg.Data,
+		Topic: msg.Subject,
+	}
+	ps.TopicEventChan <- te
 }

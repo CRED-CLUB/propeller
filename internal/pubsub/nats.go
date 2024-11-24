@@ -4,10 +4,12 @@ import (
 	"context"
 	"sync"
 
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+	natspkg "github.com/CRED-CLUB/propeller/pkg/broker/nats"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
-	natspkg "github.com/CRED-CLUB/propeller/pkg/nats"
 	"github.com/google/uuid"
 )
 
@@ -50,12 +52,12 @@ func (n *Nats) AsyncSubscribe(ctx context.Context, subject ...string) (*subscrip
 		return nil, err
 	}
 	subs := &subscription.Subscription{
-		EventChan: make(chan []byte),
-		ErrChan:   make(chan error),
-		ID:        id,
+		TopicEventChan: make(chan broker.TopicEvent),
+		ErrChan:        make(chan error),
+		ID:             id,
 	}
 
-	var natsSubscriptionList []natspkg.ISubscription
+	var natsSubscriptionList []broker.ISubscription
 
 	for _, s := range subject {
 		ns, err := n.natsClient.Subscribe(ctx, s)
@@ -63,12 +65,12 @@ func (n *Nats) AsyncSubscribe(ctx context.Context, subject ...string) (*subscrip
 			subs.ErrChan <- err
 			return nil, err
 		}
-		ch := ns.GetDataChan()
+		ch := ns.GetTopicEventChan()
 		go func() {
 			for {
 				select {
 				case p := <-ch:
-					subs.EventChan <- p
+					subs.TopicEventChan <- p
 				case <-ctx.Done():
 					logger.Ctx(ctx).Debug("stopping subscriber loop")
 					return
@@ -97,12 +99,12 @@ func (n *Nats) AddSubscription(ctx context.Context, subject string, subs *subscr
 		subs.ErrChan <- err
 		return err
 	}
-	ch := ns.GetDataChan()
+	ch := ns.GetTopicEventChan()
 	go func() {
 		for {
 			select {
 			case p := <-ch:
-				subs.EventChan <- p
+				subs.TopicEventChan <- p
 			case <-ctx.Done():
 				logger.Ctx(ctx).Debug("stopping subscriber loop")
 				return
@@ -124,9 +126,9 @@ func (n *Nats) RemoveSubscription(ctx context.Context, subject string, subs *sub
 
 func (n *Nats) removeSubscription(ctx context.Context, v interface{}) error {
 	switch t := v.(type) {
-	case natspkg.ISubscription:
+	case broker.ISubscription:
 		return n.natsClient.UnSubscribe(ctx, t)
-	case []natspkg.ISubscription:
+	case []broker.ISubscription:
 		for _, sub := range t {
 			err := n.natsClient.UnSubscribe(ctx, sub)
 			if err != nil {

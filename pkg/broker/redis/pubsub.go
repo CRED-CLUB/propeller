@@ -3,6 +3,8 @@ package redispkg
 import (
 	"context"
 
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 	"github.com/redis/go-redis/v9"
@@ -52,21 +54,21 @@ func (p PubSub) PublishBulk(ctx context.Context, publishRequest []PublishRequest
 }
 
 // Subscribe to a redis pubsub channel
-func (p PubSub) Subscribe(ctx context.Context, channel ...string) ISubscription {
+func (p PubSub) Subscribe(ctx context.Context, channel ...string) broker.ISubscription {
 	s := p.c.client.Subscribe(ctx, channel...)
-	PubSubSubscription := PubSubSubscription{
-		baseSubscription: baseSubscription{
-			dataChan: make(chan []byte),
-			topics:   channel,
+	pubSubSubscription := PubSubSubscription{
+		BaseSubscription: broker.BaseSubscription{
+			TopicEventChan: make(chan broker.TopicEvent),
+			Topics:         channel,
 		},
 		subs: s,
 	}
-	go PubSubSubscription.start(ctx)
-	return PubSubSubscription
+	go pubSubSubscription.start(ctx)
+	return pubSubSubscription
 }
 
 // AddSubscription to a redis pubsub channel
-func (p PubSub) AddSubscription(ctx context.Context, channel string, s ISubscription) error {
+func (p PubSub) AddSubscription(ctx context.Context, channel string, s broker.ISubscription) error {
 	PubSubSubscription := s.(PubSubSubscription)
 	err := PubSubSubscription.subs.Subscribe(ctx, channel)
 	if err != nil {
@@ -78,7 +80,7 @@ func (p PubSub) AddSubscription(ctx context.Context, channel string, s ISubscrip
 }
 
 // RemoveSubscription removes a subscription
-func (p PubSub) RemoveSubscription(ctx context.Context, channel string, s ISubscription) error {
+func (p PubSub) RemoveSubscription(ctx context.Context, channel string, s broker.ISubscription) error {
 	PubSubSubscription := s.(PubSubSubscription)
 	err := PubSubSubscription.subs.Unsubscribe(ctx, channel)
 	if err != nil {
@@ -90,9 +92,9 @@ func (p PubSub) RemoveSubscription(ctx context.Context, channel string, s ISubsc
 }
 
 // UnSubscribe from all channels
-func (p PubSub) UnSubscribe(ctx context.Context, s ISubscription) error {
+func (p PubSub) UnSubscribe(ctx context.Context, s broker.ISubscription) error {
 	PubSubSubscription := s.(PubSubSubscription)
-	for _, v := range PubSubSubscription.topics {
+	for _, v := range PubSubSubscription.Topics {
 		err := p.RemoveSubscription(ctx, v, PubSubSubscription)
 		if err != nil {
 			return err
@@ -109,7 +111,7 @@ func (p PubSub) UnSubscribe(ctx context.Context, s ISubscription) error {
 
 // PubSubSubscription provides pubsub subscription
 type PubSubSubscription struct {
-	baseSubscription
+	broker.BaseSubscription
 	subs *redis.PubSub
 }
 
@@ -117,7 +119,11 @@ func (p PubSubSubscription) start(ctx context.Context) {
 	for {
 		select {
 		case msg := <-p.subs.Channel():
-			p.dataChan <- []byte(msg.Payload)
+			te := broker.TopicEvent{
+				Event: []byte(msg.Payload),
+				Topic: msg.Channel,
+			}
+			p.TopicEventChan <- te
 		case <-ctx.Done():
 			logger.Ctx(ctx).Debug("stopping redis subscription")
 			return

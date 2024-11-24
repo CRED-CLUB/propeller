@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 	"github.com/redis/go-redis/v9"
@@ -70,16 +72,16 @@ func (ss Streams) PublishBulk(ctx context.Context, publishRequests []PublishRequ
 }
 
 // Subscribe to a redis stream
-func (ss Streams) Subscribe(ctx context.Context, channel ...string) ISubscription {
+func (ss Streams) Subscribe(ctx context.Context, channel ...string) broker.ISubscription {
 	channels := make([]string, len(channel))
 	for i, c := range channel {
 		channels[i] = fmt.Sprintf("%s-stream", c)
 	}
 	StreamSubscription := StreamSubscription{
 		Streams: ss,
-		baseSubscription: baseSubscription{
-			dataChan: make(chan []byte),
-			topics:   channels,
+		BaseSubscription: broker.BaseSubscription{
+			TopicEventChan: make(chan broker.TopicEvent),
+			Topics:         channels,
 		},
 	}
 	go StreamSubscription.start(ctx, channels...)
@@ -87,13 +89,13 @@ func (ss Streams) Subscribe(ctx context.Context, channel ...string) ISubscriptio
 }
 
 // RemoveSubscription ...
-func (ss Streams) RemoveSubscription(ctx context.Context, channel string, s ISubscription) error {
+func (ss Streams) RemoveSubscription(ctx context.Context, channel string, s broker.ISubscription) error {
 	ss.cancelFuncMap[channel]()
 	return nil
 }
 
 // AddSubscription ...
-func (ss Streams) AddSubscription(ctx context.Context, channel string, s ISubscription) error {
+func (ss Streams) AddSubscription(ctx context.Context, channel string, s broker.ISubscription) error {
 	// TODO: implement
 	channels := []string{fmt.Sprintf("%s-stream", channel)}
 	newCtx, cancelFunc := context.WithCancel(ctx)
@@ -103,14 +105,14 @@ func (ss Streams) AddSubscription(ctx context.Context, channel string, s ISubscr
 }
 
 // UnSubscribe ...
-func (ss Streams) UnSubscribe(ctx context.Context, s ISubscription) error {
+func (ss Streams) UnSubscribe(ctx context.Context, s broker.ISubscription) error {
 	return nil
 }
 
 // StreamSubscription provides stream subscription
 type StreamSubscription struct {
 	Streams
-	baseSubscription
+	broker.BaseSubscription
 }
 
 func (st StreamSubscription) start(ctx context.Context, channels ...string) {
@@ -134,7 +136,11 @@ func (st StreamSubscription) start(ctx context.Context, channels ...string) {
 			for _, stream := range resultStreams[0].Messages {
 				var msg []byte
 				msg = []byte(stream.Values["data"].(string))
-				st.dataChan <- msg
+				te := broker.TopicEvent{
+					Event: msg,
+					Topic: resultStreams[0].Stream,
+				}
+				st.TopicEventChan <- te
 				for _, chh := range channels {
 					_, err := st.Streams.c.client.XDel(ctx, chh, stream.ID).Result()
 					if err != nil {

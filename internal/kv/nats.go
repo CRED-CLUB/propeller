@@ -3,7 +3,7 @@ package kv
 import (
 	"context"
 
-	natsclient "github.com/CRED-CLUB/propeller/pkg/nats"
+	natsclient "github.com/CRED-CLUB/propeller/pkg/broker/nats"
 )
 
 // Nats ...

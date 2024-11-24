@@ -1,8 +1,8 @@
 package broker
 
 import (
-	natspkg "github.com/CRED-CLUB/propeller/pkg/nats"
-	redispkg "github.com/CRED-CLUB/propeller/pkg/redis"
+	natspkg "github.com/CRED-CLUB/propeller/pkg/broker/nats"
+	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
 )
 
 // Config for broker

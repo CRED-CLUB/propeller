@@ -6,8 +6,9 @@ import (
 
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
+	"github.com/CRED-CLUB/propeller/pkg/broker"
+	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
-	redispkg "github.com/CRED-CLUB/propeller/pkg/redis"
 	"github.com/google/uuid"
 )
 
@@ -50,17 +51,17 @@ func (r *Redis) AsyncSubscribe(ctx context.Context, subject ...string) (*subscri
 		return nil, pErr
 	}
 	subs := &subscription.Subscription{
-		EventChan: make(chan []byte),
-		ErrChan:   make(chan error),
-		ID:        id,
+		TopicEventChan: make(chan broker.TopicEvent),
+		ErrChan:        make(chan error),
+		ID:             id,
 	}
 	pubs := r.redisClient.Subscribe(ctx, subject...)
-	ch := pubs.GetDataChan()
+	ch := pubs.GetTopicEventChan()
 	go func() {
 		for {
 			select {
 			case p := <-ch:
-				subs.EventChan <- p
+				subs.TopicEventChan <- p
 			case <-ctx.Done():
 				logger.Ctx(ctx).Debug("stopping subscriber loop")
 				return
@@ -77,10 +78,10 @@ func (r *Redis) AddSubscription(ctx context.Context, subject string, subs *subsc
 	if err != nil {
 		return err
 	}
-	var rs redispkg.ISubscription
+	var rs broker.ISubscription
 	switch v.(type) {
-	case redispkg.ISubscription:
-		rs = v.(redispkg.ISubscription)
+	case broker.ISubscription:
+		rs = v.(broker.ISubscription)
 	default:
 		pErr := perror.Newf(perror.Internal, "type not defined")
 		logger.Ctx(ctx).Error(pErr)
@@ -99,10 +100,10 @@ func (r *Redis) RemoveSubscription(ctx context.Context, subject string, subs *su
 	if err != nil {
 		return err
 	}
-	var rs redispkg.ISubscription
+	var rs broker.ISubscription
 	switch v.(type) {
-	case redispkg.ISubscription:
-		rs = v.(redispkg.ISubscription)
+	case broker.ISubscription:
+		rs = v.(broker.ISubscription)
 	default:
 		pErr := perror.Newf(perror.Internal, "type not defined")
 		logger.Ctx(ctx).Error(pErr)
@@ -121,10 +122,10 @@ func (r *Redis) Unsubscribe(ctx context.Context, subs *subscription.Subscription
 	if err != nil {
 		return err
 	}
-	var rs redispkg.ISubscription
+	var rs broker.ISubscription
 	switch v.(type) {
-	case redispkg.ISubscription:
-		rs = v.(redispkg.ISubscription)
+	case broker.ISubscription:
+		rs = v.(broker.ISubscription)
 	default:
 		pErr := perror.Newf(perror.Internal, "type not defined")
 		logger.Ctx(ctx).Error(pErr)
