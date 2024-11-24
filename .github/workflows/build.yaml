@@ -28,5 +28,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: quay.io/abhishekvrshny/propeller:latest
