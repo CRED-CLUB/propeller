@@ -57,8 +57,8 @@ $(BIN)/golint: PACKAGE=golang.org/x/lint/golint@latest
 
 GOLINT = $(BIN)/golint
 
-.PHONY: go-lint ## Run golint check
-go-lint: | $(GOLINT) ; $(info $(M) running golint…) @
+.PHONY: golint-check ## Run golint check
+golint-check: | $(GOLINT) ; $(info $(M) running golint…) @
 	$Q $(GOLINT) -set_exit_status $(PKGS)
 
 .PHONY: proto-generate ## Generate proto bindings
