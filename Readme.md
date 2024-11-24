@@ -1,4 +1,7 @@
-# Propeller
+# Propeller 𖣘
+[![Go Report Card](https://goreportcard.com/badge/github.com/CRED-CLUB/propeller)](https://goreportcard.com/report/github.com/CRED-CLUB/propeller)
+[![CHECKS](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)
+[![GoDoc](https://godoc.org/github.com/CRED-CLUB/propeller?status.svg)](https://godoc.org/github.com/CRED-CLUB/propeller) <a href="https://starcharts.herokuapp.com/CRED-CLUB/propeller"><img alt="Stars" src="https://img.shields.io/github/stars/CRED-CLUB/propeller.svg?style=social"></a>
 
 Propeller is a platform to enable bi-directional low latency communication between two systems. The primary use-case is to enable server side events to the app.
 
@@ -6,7 +9,7 @@ Propeller is a platform to enable bi-directional low latency communication betwe
 
 ## Pre-requisites
 1. Docker
-2. Go 1.21
+2. Go 1.23
 ## Running the service
 
 After cloning the repo, run `make help` to see list of all available commands

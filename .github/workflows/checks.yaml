@@ -11,8 +11,6 @@ jobs:
       - name: checkout
         id: checkout
         uses: actions/checkout@v1
-        with:
-          submodules: true
       - name: install prerequisites
         run: |
           apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine/latest-stable/community/ build-base gcc make git librdkafka-dev pkgconf curl
