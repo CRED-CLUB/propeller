@@ -6,7 +6,7 @@ nav_order: 3
 ---
 # Client Setup
 
-Any gRPC client can be used to test `propeller` (eg [`Postmman`](https://www.postman.com/)). `propeller` doesn't support server reflection. [`api.proto`](https://github.com/CRED-CLUB/propeller/blob/main/proto/push/v1/api.proto) file can be imported in the client (like Postman).
+Any gRPC client can be used to test `propeller` (eg [`Postman`](https://www.postman.com/)). `propeller` doesn't support server reflection. [`api.proto`](https://github.com/CRED-CLUB/propeller/blob/main/proto/push/v1/api.proto) file can be imported in the client (like Postman).
 
 ## `Channel` request
 Create a new `gRPC` request.
