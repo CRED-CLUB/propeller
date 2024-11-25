@@ -10,7 +10,7 @@ import (
 
 // IKV interface
 type IKV interface {
-	Store(ctx context.Context, key string, field string, attrs map[string]string) error
+	Store(ctx context.Context, key string, field string, attrs string) error
 	Load(ctx context.Context, key string) (map[string]string, error)
 	Delete(ctx context.Context, key string, fields ...string) error
 }
@@ -23,7 +23,7 @@ func New(ctx context.Context, config broker.Config) (IKV, error) {
 		if err != nil {
 			return nil, err
 		}
-		return NewNats(natsClient), nil
+		return NewNats(ctx, natsClient)
 	case "redis":
 		redisClient, err := broker.NewRedisClient(ctx, config)
 		if err != nil {

@@ -11,7 +11,7 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
     persistence = false
     [broker.nats]
         URL = "http://localhost:4222"
-        EmbeddedServer = true
+        EmbeddedServer = false
     [broker.redis]
         Address = "localhost:6379"
         Password = ""

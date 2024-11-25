@@ -246,7 +246,8 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 		if err != nil {
 			return nil, err
 		}
-		err = c.kv.Store(ctx, clientID, device.ID, device.Attributes)
+		v, err := json.Marshal(device.Attributes)
+		err = c.kv.Store(ctx, clientID, device.ID, string(v))
 		if err != nil {
 			logger.Ctx(ctx).Errorf("error in storing device details %+v", err)
 		}

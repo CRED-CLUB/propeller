@@ -2,12 +2,8 @@ package kv
 
 import (
 	"context"
-	"encoding/json"
 
 	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
-
-	"github.com/CRED-CLUB/propeller/internal/perror"
-	"github.com/CRED-CLUB/propeller/pkg/logger"
 )
 
 // Redis ...
@@ -21,14 +17,8 @@ func NewRedis(client *redispkg.Client) IKV {
 }
 
 // Store key with values
-func (r *Redis) Store(ctx context.Context, key string, field string, attrs map[string]string) error {
-	jsonData, err := json.Marshal(attrs)
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "error in json marshalling %v", err)
-		logger.Ctx(ctx).Error(pErr.Error())
-		return pErr
-	}
-	err = r.redisClient.HSet(ctx, key, field, jsonData)
+func (r *Redis) Store(ctx context.Context, key string, field string, attrs string) error {
+	err := r.redisClient.HSet(ctx, key, field, attrs)
 	if err != nil {
 		return err
 	}
