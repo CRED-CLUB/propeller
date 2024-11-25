@@ -1,4 +1,4 @@
-title: propeller
+title: Propeller
 description: propeller is an opinionated push platform for realtime streaming between clients (mobile apps) and backend services
 remote_theme: just-the-docs/just-the-docs
 #theme: just-the-docs
@@ -14,3 +14,19 @@ callouts:
     title: Note
     color: blue
 
+aux_links:
+  "Propeller on GitHub":
+    - "https://github.com/CRED-CLUB/propeller"
+
+# Makes Aux links open in a new tab. Default is false
+aux_links_new_tab: true
+
+nav_external_links:
+  - title: Propeller on GitHub
+    url: https://github.com/CRED-CLUB/propeller
+    hide_icon: false # set to true to hide the external link icon - defaults to false
+    opens_in_new_tab: true # set to true to open this link in a new tab - defaults to false
+  - title: Propeller docker images in Quay.io
+    url: https://quay.io/repository/abhishekvrshny/propeller?tab=tags
+    hide_icon: false
+    opens_in_new_tab: true
