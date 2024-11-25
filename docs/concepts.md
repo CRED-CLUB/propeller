@@ -84,7 +84,7 @@ A `client` is identified by the value of `ClientHeader` metadata passed by the c
 
 A `device` is identified by the value of `DeviceHeader` metadata passed by the client in headers.
 
-{: .note }
+{: .note } 
 Authentication is not handled by `propeller`. An authentication middleware or API gateway can be used to inject the defined `ClientHeader` and/or `DeviceHeader`, if required.
 
 ### Sending `event` to a `client`
@@ -122,3 +122,5 @@ There also exists a rpc to do the same in bulk to multiple `topics`.
 ```protobuf
   rpc SendEventToTopics(SendEventToTopicsRequest) returns (SendEventToTopicsResponse) {}
 ```
+
+---
