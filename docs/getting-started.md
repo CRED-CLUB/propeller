@@ -58,8 +58,5 @@ docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:la
 docker run -it -e PROPELLER_CONFIG_FILE_PATH=/etc -e PROPELLER_BROKER_REDIS_ADDRESS=localhost:6379 -v $(pwd)/tmp:/etc --network="host" quay.io/abhishekvrshny/propeller
 ```
 
-## Connect the sample client
-
-
 ----
 
