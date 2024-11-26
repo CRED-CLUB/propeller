@@ -20,7 +20,7 @@ MAIN_PACKAGE_PATH := "github.com/CRED-CLUB/propeller/cmd/service"
 CLIENT_BINARY_OUT := "propeller-client"
 CLIENT_PACKAGE_PATH := "github.com/CRED-CLUB/propeller/cmd/client"
 
-RPC_ROOT := "rpc/"
+GEN_ROOT := "gen/"
 
 # go binary. Change this to experiment with different versions of go.
 GO       = go
@@ -72,7 +72,7 @@ proto-lint:
 
 .PHONY: proto-clean ## Clean generated proto files
 proto-clean:
-	@rm -rf $(RPC_ROOT)
+	@rm -rf $(GEN_ROOT)
 
 .PHONY: clean ## Clean all generated files
 clean: proto-clean

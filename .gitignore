@@ -54,13 +54,11 @@ bin/*
 # Dont ignore any .gitkeep files, please.
 !*.gitkeep
 
-# Generated protobuf files.
-rpc
-
 # Vendor modules.
 vendor/*
 
 # gh-pages
 Gemfile.lock
 
-
+# generated files
+gen
