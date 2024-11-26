@@ -1,20 +1,29 @@
-version: v1
+version: v2
 managed:
   enabled: true
-  go_package_prefix:
-    default: github.com/CRED-CLUB/propeller/proto
-    except:
-      - buf.build/googleapis/googleapis
-      - buf.build/grpc-ecosystem/grpc-gateway
+  disable:
+    # Don't modify any files in buf.build/googleapis/googleapis
+    - module: buf.build/googleapis/googleapis
+  override:
+    - file_option: java_package_prefix
+      value: club.cred
 plugins:
-  - plugin: buf.build/protocolbuffers/go:v1.30.0
+  - remote: buf.build/grpc/go
     out: rpc
-    opt: paths=source_relative
-  - plugin: buf.build/grpc/go:v1.3.0
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  - remote: buf.build/protocolbuffers/go
     out: rpc
-    opt: paths=source_relative,require_unimplemented_servers=false
-  - plugin: buf.build/grpc-ecosystem/gateway:v2.15.2
-    out: rpc
-    opt: paths=source_relative
-  - plugin: buf.build/grpc-ecosystem/openapiv2:v2.15.2
-    out: rpc/third_party/OpenAPI
+    opt:
+      - paths=source_relative
+#  - remote: buf.build/grpc/java:v1.68.1
+#    out: gen/java
+#  - remote: buf.build/protocolbuffers/java:v28.3
+#    out: gen/java
+#  - remote: buf.build/grpc/python:v1.68.0
+#    out: gen/python
+#  - remote: buf.build/protocolbuffers/python:v28.3
+#    out: gen/python
+inputs:
+  - directory: proto

@@ -8,7 +8,7 @@ UNAME_ARCH=$(shell go env GOARCH)
 
 # buf
 BUF_BIN := /usr/local/bin
-BUF_VERSION := 1.17.0
+BUF_VERSION := 1.47.2
 BUF_BINARY_NAME := buf
 BUF_UNAME_OS := $(shell uname -s)
 BUF_UNAME_ARCH := $(shell uname -m)
