@@ -12,7 +12,7 @@ List of currently supported languages.
 
 ## Golang
 
-```Go
+```
 import "github.com/CRED-CLUB/propeller/tree/main/rpc/push/v1"
 ```
 

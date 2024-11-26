@@ -12,8 +12,8 @@ Any gRPC client can be used to test `propeller` (eg [`Postman`](https://www.post
 Create a new `gRPC` request.
 
 Set the following metadata:
-- `x-user-id`: This should match the `ClientHeader` defined in `propeller.yaml` config.
-- `x-device-id`: This should match the `DeviceHeader` defined in `propeller.yaml` config.
+- `x-user-id`: This should match the `ClientHeader` defined in `propeller.toml` config.
+- `x-device-id`: This should match the `DeviceHeader` defined in `propeller.toml` config.
 - Optionally, metadata headers defined in `DeviceAttributeHeaders` config can be supplied.
 
 On `Invoke`, a `connect_ack` event would be received indicating successful connection with `propeller` backend.

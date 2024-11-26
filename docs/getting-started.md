@@ -9,7 +9,7 @@ The easiest way to get started is by pulling and running the docker image. It ha
 
 ## Create a config file
 
-`/tmp/propeller.yaml`
+`/tmp/propeller.toml`
 ```yaml
 ServiceName = "propeller"
 SendTestPayload = false

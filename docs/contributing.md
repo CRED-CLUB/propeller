@@ -2,7 +2,7 @@
 title: Contributing
 
 layout: default
-nav_order: 7
+nav_order: 8
 ---
 # Contribution Guide
 
@@ -14,7 +14,7 @@ Pre-requisites
 Clone the repository
 
 ```shell
-https://github.com/CRED-CLUB/propeller.git
+git clone https://github.com/CRED-CLUB/propeller.git
 cd propeller
 ```
 
@@ -62,6 +62,16 @@ make dev-dependencies-down
 The above utilities are useful when developing and running `propeller` through an IDE.
 
 `docker-up` and `docker-down` would also bring up/down `propeller` in a docker container.
+
+Ensure the configuration is updated at `config/propeller.toml`
+
+Run the binary
+
+```shell
+./bin/propeller
+```
+
+Refer [Testing Guide](https://cred-club.github.io/propeller/testing.html) for details on executing the APIs
 
 Other options are self-explanatory.
 

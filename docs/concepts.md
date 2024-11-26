@@ -13,9 +13,9 @@ nav_order: 2
 | **event**         | A message payload to be exchanged                                                                                                                                                                                                     |
 | **client**        | A client (generally frontend) to whom an `event` is sent (generally from backend)                                                                                                                                                     |
 | **channel**       | A bidirectional connection established between the `Client` and `propeller`                                                                                                                                                           |
-| **topic**         | A topic on interest between backend and frontend clients. Default `topic` for a `channel` is the value of `ClientHeader` key as defined in `propeller.yaml` config. A `topic` can be custom as well to which `client`'s can subscribe |
+| **topic**         | A topic on interest between backend and frontend clients. Default `topic` for a `channel` is the value of `ClientHeader` key as defined in `propeller.toml` config. A `topic` can be custom as well to which `client`'s can subscribe |
 | **device**        | A `client`'s device. A `client` can have multiple devices                                                                                                                                                                             |
-| **device attributes** | Attributes of a device as defined by `DeviceAttributeHeaders` in `propeller.yaml` config. Eg. `x-os`, `x-app-version` etc.                                                                                                            |
+| **device attributes** | Attributes of a device as defined by `DeviceAttributeHeaders` in `propeller.toml` config. Eg. `x-os`, `x-app-version` etc.                                                                                                            |
 
 ----
 
