@@ -2,9 +2,10 @@ package maven
 
 import (
 	"context"
-	"github.com/CRED-CLUB/propeller/pkg/fs"
 	"os"
 	"text/template"
+
+	"github.com/CRED-CLUB/propeller/pkg/fs"
 
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 )

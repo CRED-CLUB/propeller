@@ -61,4 +61,4 @@ vendor/*
 Gemfile.lock
 
 # generated files
-gen
+gen/*

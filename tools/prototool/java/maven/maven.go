@@ -3,9 +3,10 @@ package maven
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/CRED-CLUB/propeller/pkg/fs"
 	"github.com/CRED-CLUB/propeller/pkg/process"
-	"os"
 
 	"github.com/CRED-CLUB/propeller/pkg/logger"
 )
