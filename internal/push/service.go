@@ -266,7 +266,7 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 }
 
 // TopicSubscribe to the topic
-func (c *Service) topicSubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
+func (c *Service) TopicSubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
 	logger.Ctx(ctx).Infow("subscribing", "topic", topic)
 	err := c.pubSub.AddSubscription(ctx, topic, clientSubscription)
 	if err != nil {
@@ -276,7 +276,7 @@ func (c *Service) topicSubscribe(ctx context.Context, topic string, clientSubscr
 }
 
 // TopicUnsubscribe to unsubscribe from a topic
-func (c *Service) topicUnsubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
+func (c *Service) TopicUnsubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
 	logger.Ctx(ctx).Debugw("un-subscribing", "topic", topic)
 	err := c.pubSub.RemoveSubscription(ctx, topic, clientSubscription)
 	if err != nil {
@@ -296,35 +296,6 @@ func (c *Service) ClientUnsubscribe(ctx context.Context, clientID string, subscr
 	connectedClients.Dec()
 	sessionDuration.Observe(time.Since(c.sessionStartTime).Seconds())
 	return c.pubSub.Unsubscribe(ctx, subscription)
-}
-
-// HandleReceivedPayload handles the received requests from the client
-func (c *Service) HandleReceivedPayload(ctx context.Context, receivedRequest *pushv1.ChannelRequest, clientSubscription *subscription.Subscription) {
-	testCtx, testCancelFunc := context.WithCancel(ctx)
-	c.testCancelFunc = testCancelFunc
-
-	switch receivedRequest.Request.(type) {
-	case *pushv1.ChannelRequest_TopicSubscriptionRequest:
-		topic := receivedRequest.GetTopicSubscriptionRequest().GetTopic()
-		err := c.topicSubscribe(ctx, topic, clientSubscription)
-		if err != nil {
-			logger.Ctx(ctx).Errorw("error in subscribing to topic", "topic", topic, "error", err.Error())
-			return
-		}
-		if c.config.SendTestPayloadToTopic == true {
-			go c.triggerTestPayloadToTopic(testCtx, topic)
-		}
-	case *pushv1.ChannelRequest_TopicUnsubscriptionRequest:
-		topic := receivedRequest.GetTopicUnsubscriptionRequest().GetTopic()
-		err := c.topicUnsubscribe(ctx, topic, clientSubscription)
-		if err != nil {
-			logger.Ctx(ctx).Errorw("error in unsubscribing to topic", "topic", topic, "error", err.Error())
-			return
-		}
-		if c.config.SendTestPayloadToTopic == true {
-			c.testCancelFunc()
-		}
-	}
 }
 
 func (c *Service) triggerTestPayloadToClient(ctx context.Context, clientID string) {
@@ -351,7 +322,8 @@ func (c *Service) triggerTestPayloadToClientWithDevice(ctx context.Context, clie
 	}
 }
 
-func (c *Service) triggerTestPayloadToTopic(ctx context.Context, topic string) {
+// TriggerTestPayloadToTopic triggers test payload to topic
+func (c *Service) TriggerTestPayloadToTopic(ctx context.Context, topic string) {
 	for {
 		select {
 		case <-ctx.Done():

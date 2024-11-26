@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
+
 	"github.com/CRED-CLUB/propeller/internal/config"
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/internal/push"
@@ -23,8 +25,9 @@ func NewPushServer(svc *push.Service, config config.Config) *PushServer {
 // PushServer implements push web component
 type PushServer struct {
 	pushv1.UnimplementedPushServiceServer
-	svc  *push.Service
-	conf config.Config
+	svc            *push.Service
+	conf           config.Config
+	testCancelFunc context.CancelFunc
 }
 
 // Channel to the push server and receive streaming response
@@ -114,7 +117,7 @@ func (ps *PushServer) Channel(srv pushv1.PushService_ChannelServer) error {
 			logger.Ctx(loggerCtx).Debugw("sent event", "eventName", protoEvent.GetName())
 		case req := <-rc:
 			logger.Ctx(loggerCtx).Infow("received from client", "req", req)
-			ps.svc.HandleReceivedPayload(loggerCtx, req, clientSubscription)
+			ps.HandleReceivedPayload(loggerCtx, srv, req, clientSubscription)
 		}
 	}
 }
@@ -287,6 +290,72 @@ func (ps *PushServer) GetClientActiveDevices(ctx context.Context, req *pushv1.Ge
 		IsClientOnline: isClientOnline,
 		Devices:        devices,
 	}, nil
+}
+
+// HandleReceivedPayload handles the received requests from the client
+func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.PushService_ChannelServer, receivedRequest *pushv1.ChannelRequest, clientSubscription *subscription.Subscription) {
+	testCtx, testCancelFunc := context.WithCancel(ctx)
+	ps.testCancelFunc = testCancelFunc
+
+	switch receivedRequest.Request.(type) {
+	case *pushv1.ChannelRequest_TopicSubscriptionRequest:
+		topic := receivedRequest.GetTopicSubscriptionRequest().GetTopic()
+		err := ps.svc.TopicSubscribe(ctx, topic, clientSubscription)
+		if err != nil {
+			logger.Ctx(ctx).Errorw("error in subscribing to topic", "topic", topic, "error", err.Error())
+			_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicSubscriptionRequestAck{TopicSubscriptionRequestAck: &pushv1.TopicSubscriptionRequestAck{
+				Topic: topic,
+				Status: &pushv1.ResponseStatus{
+					Success:   false,
+					ErrorCode: "",
+					Message:   map[string]string{"message": err.Error()},
+
+					ErrorType: "",
+				},
+			}}})
+			return
+		}
+		if ps.conf.SendTestPayloadToTopic == true {
+			go ps.svc.TriggerTestPayloadToTopic(testCtx, topic)
+		}
+		_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicSubscriptionRequestAck{TopicSubscriptionRequestAck: &pushv1.TopicSubscriptionRequestAck{
+			Topic: topic,
+			Status: &pushv1.ResponseStatus{
+				Success:   true,
+				ErrorCode: "",
+				Message:   nil,
+				ErrorType: "",
+			},
+		}}})
+	case *pushv1.ChannelRequest_TopicUnsubscriptionRequest:
+		topic := receivedRequest.GetTopicUnsubscriptionRequest().GetTopic()
+		err := ps.svc.TopicUnsubscribe(ctx, topic, clientSubscription)
+		if err != nil {
+			logger.Ctx(ctx).Errorw("error in unsubscribing to topic", "topic", topic, "error", err.Error())
+			_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicUnsubscriptionRequestAck{TopicUnsubscriptionRequestAck: &pushv1.TopicUnsubscriptionRequestAck{
+				Topic: topic,
+				Status: &pushv1.ResponseStatus{
+					Success:   false,
+					ErrorCode: "",
+					Message:   map[string]string{"message": err.Error()},
+					ErrorType: "",
+				},
+			}}})
+			return
+		}
+		if ps.conf.SendTestPayloadToTopic == true {
+			ps.testCancelFunc()
+		}
+		_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicUnsubscriptionRequestAck{TopicUnsubscriptionRequestAck: &pushv1.TopicUnsubscriptionRequestAck{
+			Topic: topic,
+			Status: &pushv1.ResponseStatus{
+				Success:   true,
+				ErrorCode: "",
+				Message:   nil,
+				ErrorType: "",
+			},
+		}}})
+	}
 }
 
 func receiveLoop(ctx context.Context, rc chan *pushv1.ChannelRequest, srv pushv1.PushService_ChannelServer) {
