@@ -35,7 +35,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to start grpc grpcserver %s", err.Error())
 	}
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+
+		}
+	}(conn)
 
 	c := pushv1.NewPushServiceClient(conn)
 	// Injecting X-USER-ID is not required with auth plugin, as the plugin would inject this
@@ -83,7 +88,7 @@ func sendMessage(ctx context.Context, userID string, deviceID string, c pushv1.P
 			log.Fatalf("error in SendEventToClientChannel %s with response %v", err.Error(), r)
 		}
 		if deviceID != "" {
-			c.SendEventToClientDeviceChannel(ctx, &pushv1.SendEventToClientDeviceChannelRequest{
+			_, err := c.SendEventToClientDeviceChannel(ctx, &pushv1.SendEventToClientDeviceChannelRequest{
 				ClientId: userID,
 				DeviceId: deviceID,
 				Event: &pushv1.Event{
@@ -95,9 +100,12 @@ func sendMessage(ctx context.Context, userID string, deviceID string, c pushv1.P
 					},
 				},
 			})
+			if err != nil {
+				log.Fatalf("error in SendEventToClientDeviceChannel %s with response %v", err.Error(), r)
+			}
 		}
 	} else {
-		c.SendEventToTopic(ctx, &pushv1.SendEventToTopicRequest{
+		_, err = c.SendEventToTopic(ctx, &pushv1.SendEventToTopicRequest{
 			Topic: subTopic,
 			Event: &pushv1.Event{
 				Name:       subTopic,
@@ -108,7 +116,10 @@ func sendMessage(ctx context.Context, userID string, deviceID string, c pushv1.P
 				},
 			},
 		})
-		c.SendEventToTopics(ctx, &pushv1.SendEventToTopicsRequest{
+		if err != nil {
+			log.Fatalf("error in SendEventToTopic %s", err.Error())
+		}
+		_, err = c.SendEventToTopics(ctx, &pushv1.SendEventToTopicsRequest{
 			Requests: []*pushv1.SendEventToTopicRequest{
 				{
 					Topic: subTopic,
@@ -134,6 +145,9 @@ func sendMessage(ctx context.Context, userID string, deviceID string, c pushv1.P
 				},
 			},
 		})
+		if err != nil {
+			log.Fatalf("error in SendEventToTopics %s", err.Error())
+		}
 	}
 
 	log.Printf("sent event request")
@@ -194,7 +208,10 @@ func connect(ctx context.Context, userID string, c pushv1.PushServiceClient, sub
 
 	}
 	<-waitc
-	stream.CloseSend()
+	err = stream.CloseSend()
+	if err != nil {
+		return
+	}
 }
 
 func listClientDevices(ctx context.Context, userID string, c pushv1.PushServiceClient) {

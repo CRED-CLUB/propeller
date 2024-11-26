@@ -140,7 +140,14 @@ func (ps *PushServer) SendEventToClientChannel(ctx context.Context, req *pushv1.
 		return nil, perror.ToGRPCError(err)
 	}
 
-	return &pushv1.SendEventToClientChannelResponse{}, nil
+	return &pushv1.SendEventToClientChannelResponse{
+		Status: &pushv1.ResponseStatus{
+			Success:   true,
+			ErrorCode: "",
+			Message:   nil,
+			ErrorType: "",
+		},
+	}, nil
 }
 
 // SendEventToClientDeviceChannel sends event to a client with device
@@ -165,7 +172,14 @@ func (ps *PushServer) SendEventToClientDeviceChannel(ctx context.Context, req *p
 		return nil, perror.ToGRPCError(err)
 	}
 
-	return &pushv1.SendEventToClientDeviceChannelResponse{}, nil
+	return &pushv1.SendEventToClientDeviceChannelResponse{
+		Status: &pushv1.ResponseStatus{
+			Success:   true,
+			ErrorCode: "",
+			Message:   nil,
+			ErrorType: "",
+		},
+	}, nil
 
 }
 
@@ -190,7 +204,14 @@ func (ps *PushServer) SendEventToTopic(ctx context.Context, req *pushv1.SendEven
 		return nil, perror.ToGRPCError(err)
 	}
 
-	return &pushv1.SendEventToTopicResponse{}, nil
+	return &pushv1.SendEventToTopicResponse{
+		Status: &pushv1.ResponseStatus{
+			Success:   true,
+			ErrorCode: "",
+			Message:   nil,
+			ErrorType: "",
+		},
+	}, nil
 }
 
 // SendEventToTopics sends event to multiple topics
@@ -215,11 +236,19 @@ func (ps *PushServer) SendEventToTopics(ctx context.Context, req *pushv1.SendEve
 	}
 
 	err = ps.svc.PublishToTopics(loggerCtx, reqModel)
+
 	if err != nil {
 		return nil, perror.ToGRPCError(err)
 	}
 
-	return &pushv1.SendEventToTopicsResponse{}, nil
+	return &pushv1.SendEventToTopicsResponse{
+		Status: &pushv1.ResponseStatus{
+			Success:   true,
+			ErrorCode: "",
+			Message:   nil,
+			ErrorType: "",
+		},
+	}, nil
 }
 
 // GetClientActiveDevices returns currently online devices for a client
