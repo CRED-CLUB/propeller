@@ -1,5 +1,5 @@
 ---
-title: Archicture
+title: Architecture
 
 layout: default
 nav_order: 5

@@ -68,7 +68,7 @@ proto-generate:
 .PHONY: proto-lint ## Proto lint
 proto-lint:
 	go run github.com/bufbuild/buf/cmd/buf@v${BUF_VERSION} lint
-	go run github.com/bufbuild/buf/cmd/buf@v${BUF_VERSION} breaking --against '.git#branch=master'
+	go run github.com/bufbuild/buf/cmd/buf@v${BUF_VERSION} breaking --against '.git#branch=main'
 
 .PHONY: proto-clean ## Clean generated proto files
 proto-clean:
