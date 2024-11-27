@@ -8,14 +8,14 @@ nav_order: 2
 
 ## Terminology
 
-| Term              | Definition                                                                                                                                                                                                                            |
-|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **event**         | A message payload to be exchanged                                                                                                                                                                                                     |
-| **client**        | A client (generally frontend) to whom an `event` is sent (generally from backend)                                                                                                                                                     |
-| **channel**       | A bidirectional connection established between the `Client` and `propeller`                                                                                                                                                           |
-| **topic**         | A topic on interest between backend and frontend clients. Default `topic` for a `channel` is the value of `ClientHeader` key as defined in `propeller.toml` config. A `topic` can be custom as well to which `client`'s can subscribe |
-| **device**        | A `client`'s device. A `client` can have multiple devices                                                                                                                                                                             |
-| **device attributes** | Attributes of a device as defined by `DeviceAttributeHeaders` in `propeller.toml` config. Eg. `x-os`, `x-app-version` etc.                                                                                                            |
+| Term              | Definition                                                                                                                                                                                                                                |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **event**         | A message payload to be exchanged.                                                                                                                                                                                                        |
+| **client**        | A client (generally frontend) to whom an `event` is sent (generally from backend).                                                                                                                                                        |
+| **channel**       | A bidirectional connection established between the `Client` and `propeller`.                                                                                                                                                              |
+| **topic**         | A topic on interest between backend and frontend clients. Default `topic` for a `channel` is the value of `ClientHeader` key as defined in `propeller.toml` config. A `topic` can be custom as well to which `client`'s can subscribe to. |
+| **device**        | A `client`'s device. A `client` can have multiple devices.                                                                                                                                                                                |
+| **device attributes** | Attributes of a device as defined by `DeviceAttributeHeaders` in `propeller.toml` config. Eg. `x-os`, `x-app-version` etc.                                                                                                                |
 
 ----
 
@@ -32,9 +32,10 @@ A `channel` is a bi-directional gRPC stream established between the `client` and
 
 `ChannelRequest` is the request message from the `client` which can be of one of the following types:
 1. `ChannelEvent`: Carries the `event` payload.
-2. `ChannelEventAck`: To acknowledging the receipt of an `event`.
+2. `ChannelEventAck`: To acknowledge the receipt of an `event`.
 3. `TopicSubscriptionRequest`: To subscribe to a custom `topic`.
-4. `TopicUnsubscriptionRequest`: To un-subscribe to the custom `topic`. 
+4. `TopicUnsubscriptionRequest`: To un-subscribe to the custom `topic`.
+
 ```protobuf
 // ChannelRequest is the channel request holder
 message ChannelRequest {
@@ -58,7 +59,8 @@ message ChannelRequest {
 1. `ConnectAck`: To acknowledge the `channel` connection request.
 2. `TopicSubscriptionRequestAck`: To acknowledge `TopicSubscriptionRequest`.
 3. `TopicUnsubscriptionRequestAck`: To acknowledge `TopicUnsubscriptionRequest`.
-```
+
+```protobuf
 // ChannelResponse is the channel response holder
 message ChannelResponse {
   oneof response {
@@ -89,7 +91,7 @@ Authentication is not handled by `propeller`. An authentication middleware or AP
 
 ### Sending `event` to a `client`
 
-A backend service can send `event` to a `client` with `SendEventToClientChannel` rpc
+A backend service can send an `event` to a `client` with `SendEventToClientChannel` API.
 
 ```protobuf
 rpc SendEventToClientChannel(SendEventToClientChannelRequest) returns (SendEventToClientChannelResponse) {}
@@ -97,7 +99,7 @@ rpc SendEventToClientChannel(SendEventToClientChannelRequest) returns (SendEvent
 
 ### Sending `event` to a particular `device` of a `client`
 
-If `EnableDeviceSupport` config is enabled, an `event` can be sent to a particular `device` of a `client`. This is useful when a client has `channels` established from multiple `devices`
+If `EnableDeviceSupport` config is enabled, an `event` can be sent to a particular `device` of a `client`. This is useful when a client has `channels` established from multiple `devices`.
 
 ```protobuf
 rpc SendEventToClientDeviceChannel(SendEventToClientDeviceChannelRequest) returns (SendEventToClientDeviceChannelResponse) {}
@@ -118,7 +120,7 @@ Backend services can send `event` to a custom `topic`.
   rpc SendEventToTopic(SendEventToTopicRequest) returns (SendEventToTopicResponse) {}
 ```
 
-There also exists a rpc to do the same in bulk to multiple `topics`.
+There also exists an API to send events to multiple `topics` at once.
 ```protobuf
   rpc SendEventToTopics(SendEventToTopicsRequest) returns (SendEventToTopicsResponse) {}
 ```

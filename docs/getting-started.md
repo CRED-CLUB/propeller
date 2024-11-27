@@ -24,7 +24,7 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
     persistence = false
     [broker.nats]
         URL = "http://localhost:4222"
-        EmbeddedServer = true
+        EmbeddedServer = false
     [broker.redis]
         Address = "localhost:6379"
         Password = ""
@@ -47,12 +47,22 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
     Port = "8081"
 
 ```
-## Run redis locally
+
+## Run the broker
+
+Run eithe redis or NATS and update the config accordingly.
+
+### Redis
 ```bash
-docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+docker run -it -p 6379:6379 redis/redis-stack-server:latest
 ```
 
-## Run the docker image
+### NATS
+```bash
+docker run -it -p 4222:4222 nats -js
+```
+
+## Run propeller
 
 ```bash
 docker run -it -e PROPELLER_CONFIG_FILE_PATH=/etc -e PROPELLER_BROKER_REDIS_ADDRESS=localhost:6379 -v $(pwd)/tmp:/etc --network="host" quay.io/abhishekvrshny/propeller

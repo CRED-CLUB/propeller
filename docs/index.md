@@ -4,7 +4,7 @@ layout: home
 nav_order: 1
 ---
 # Propeller 𖣘
-Propeller is an *opinionated* platform that enabled realtime and bidirectional communication between frontend and backend clients.
+Propeller is an *opinionated* platform that enables realtime and bidirectional communication between frontend and backend clients.
 
 ## The Need
 While polling and REST-style request-response have been the dominant paradigms for client-server communication, they inherently come with limitations that can impact performance, scalability, and user experience.
@@ -14,7 +14,7 @@ While polling and REST-style request-response have been the dominant paradigms f
 4. **Scalability Constraints**: As the number of clients and polling frequency increase, server load can become a significant bottleneck.
 
 ## Features
-1. Frontend Client can create a persistent channel with the backend.
+1. Frontend clients can create persistent channels (or connections) with the backend.
 2. Backend services can send events to the frontend clients.
 3. Support for multiple devices for a client.
 4. Support for custom topics between frontend and backend.

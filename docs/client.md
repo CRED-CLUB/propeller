@@ -28,15 +28,14 @@ Link : [https://central.sonatype.com/artifact/io.github.abhishekvrshny/propeller
 <dependency>
     <groupId>io.github.abhishekvrshny</groupId>
     <artifactId>propeller</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```
-implementation group: 'io.github.abhishekvrshny', name: 'propeller', version: '0.0.1'
-
+implementation group: 'io.github.abhishekvrshny', name: 'propeller', version: '0.0.2'
 ```
 
 {: .note }

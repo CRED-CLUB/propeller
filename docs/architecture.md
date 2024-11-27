@@ -14,7 +14,7 @@ nav_order: 5
 
 ![](https://pic.surf/vy4)
 
-## Components
+## Components (WIP)
 
 - propeller server
    - written in golang.

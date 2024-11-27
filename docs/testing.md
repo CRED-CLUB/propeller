@@ -1,20 +1,20 @@
 ---
-title: Client Testing
+title: Testing the APIs
 
 layout: default
 nav_order: 4
 ---
 # Client Setup
 
-Any gRPC client can be used to test `propeller` (eg [`Postman`](https://www.postman.com/)). `propeller` doesn't support server reflection. [`api.proto`](https://github.com/CRED-CLUB/propeller/blob/main/proto/push/v1/api.proto) file can be imported in the client (like Postman).
+Any gRPC client can be used to test `propeller` (eg [`Postman`](https://www.postman.com/)). `Propeller` doesn't support server reflection (yet). The [`api.proto`](https://github.com/CRED-CLUB/propeller/blob/main/proto/push/v1/api.proto) file can be imported in a client (like Postman).
 
 ## `Channel` request
 Create a new `gRPC` request.
 
-Set the following metadata:
-- `x-user-id`: This should match the `ClientHeader` defined in `propeller.toml` config.
-- `x-device-id`: This should match the `DeviceHeader` defined in `propeller.toml` config.
-- Optionally, metadata headers defined in `DeviceAttributeHeaders` config can be supplied.
+Set the following metadata headers:
+- `ClientHeader`, as defined in `propeller.toml` config. Eg, `x-user-id` here.
+- `DeviceHeader`, as defined in `propeller.toml` config. Eg, `x-device-id` here.
+- Optionally, `DeviceAttributeHeaders` metadata headers can be set as defined in `propeller.toml`.
 
 On `Invoke`, a `connect_ack` event would be received indicating successful connection with `propeller` backend.
 
@@ -22,25 +22,25 @@ On `Invoke`, a `connect_ack` event would be received indicating successful conne
 
 ## `SendEventToClientChannel` request
 
-Set the `client_id` to the value of `ClientHeader` metadata defined in the `Channel` request.
+Set the `client_id` to the value of `ClientHeader` metadata as also defined in the `Channel` request.
 
 ![](https://i.ibb.co/cwZt3dk/Screenshot-2024-11-25-at-8-39-04-AM.png)
-The event is received on the `Channel`
+The event is received on the `Channel`.
 
 ![](https://i.ibb.co/8Ppc6bz/Screenshot-2024-11-25-at-8-40-07-AM.png)
-## Topic Subscription from Client
+## Custom topic Subscription from the client
 
-Clients can subscribe to custom topic (eg, `test-topic` hereP)
+Clients can subscribe to custom topics (eg, `test-topic` here)
 
 ![](https://i.ibb.co/xLNBgYH/Screenshot-2024-11-25-at-9-12-46-AM.png)
 
 ## `SendEventToTopic` request
 
-Events can be sent to custom topics
+Events can be sent to custom topics from the backend.
 
 ![](https://i.ibb.co/vPVTp38/Screenshot-2024-11-25-at-8-42-14-AM.png)
 
-The sent even is received on the `Channel`
+The sent event is received on the `channel`.
 
 ![](https://i.ibb.co/F3j43Kn/Screenshot-2024-11-25-at-8-42-44-AM.png)
 
