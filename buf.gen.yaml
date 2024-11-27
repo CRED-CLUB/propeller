@@ -17,13 +17,9 @@ plugins:
     out: rpc
     opt:
       - paths=source_relative
-#  - remote: buf.build/grpc/java:v1.68.1
-#    out: gen/java
-#  - remote: buf.build/protocolbuffers/java:v28.3
-#    out: gen/java
-#  - remote: buf.build/grpc/python:v1.68.0
-#    out: gen/python
-#  - remote: buf.build/protocolbuffers/python:v28.3
-#    out: gen/python
+  - remote: buf.build/grpc/java:v1.68.1
+    out: gen/java/src/main/java
+  - remote: buf.build/protocolbuffers/java:v28.3
+    out: gen/java/src/main/java
 inputs:
   - directory: proto
