@@ -75,6 +75,10 @@ func (c *Service) GetClientActiveDevices(ctx context.Context, req GetClientActiv
 		return nil, perror.New(perror.FailedPrecondition, "device support disabled")
 	}
 
+	if req.clientID == "" {
+		return nil, perror.New(perror.InvalidArgument, "client id required")
+	}
+
 	// load device entries from kv store
 	v, err := c.kv.Load(ctx, req.clientID)
 	if err != nil {
@@ -182,11 +186,29 @@ func (c *Service) receiveDeviceResponse(ctx context.Context, s *subscription.Sub
 func (c *Service) PublishToClient(ctx context.Context, req SendEventToClientChannelRequest) error {
 	logger.Ctx(ctx).Infow("publishing to client")
 
+	err := c.validateSendEventToClientChannelRequest(req)
+	if err != nil {
+		return perror.New(perror.InvalidArgument, err.Error())
+	}
+
 	publishReq := pubsub.PublishRequest{Channel: req.clientID, Data: req.event}
 
 	messagesSent.WithLabelValues(req.eventName).Inc()
 
 	return c.pubSub.Publish(ctx, publishReq)
+}
+
+func (c *Service) validateSendEventToClientChannelRequest(req SendEventToClientChannelRequest) error {
+	if req.clientID == "" {
+		return fmt.Errorf("client ID is empty")
+	}
+	if req.event == nil {
+		return fmt.Errorf("event is empty")
+	}
+	if req.eventName == "" {
+		return fmt.Errorf("event name is empty")
+	}
+	return nil
 }
 
 // PublishToClientWithDevice publishes to the client with device
@@ -196,6 +218,11 @@ func (c *Service) PublishToClientWithDevice(ctx context.Context, req SendEventTo
 		return perror.New(perror.FailedPrecondition, "device support disabled")
 	}
 
+	err := c.validateSendEventToClientDeviceChannelRequest(req)
+	if err != nil {
+		return perror.New(perror.InvalidArgument, err.Error())
+	}
+
 	publishReq := pubsub.PublishRequest{Channel: fmt.Sprintf("%s--%s", req.clientID, req.deviceID), Data: req.event}
 
 	messagesSent.WithLabelValues(req.eventName).Inc()
@@ -203,16 +230,50 @@ func (c *Service) PublishToClientWithDevice(ctx context.Context, req SendEventTo
 	return c.pubSub.Publish(ctx, publishReq)
 }
 
+func (c *Service) validateSendEventToClientDeviceChannelRequest(req SendEventToClientDeviceChannelRequest) error {
+	if req.clientID == "" {
+		return fmt.Errorf("client ID is empty")
+	}
+	if req.event == nil {
+		return fmt.Errorf("event is empty")
+	}
+	if req.eventName == "" {
+		return fmt.Errorf("event name is empty")
+	}
+	if req.deviceID == "" {
+		return fmt.Errorf("device ID is empty")
+	}
+	return nil
+}
+
 // PublishToTopic publishes to the topic
 func (c *Service) PublishToTopic(ctx context.Context, req SendEventToTopicRequest) error {
 	// TODO: add device id support
 	logger.Ctx(ctx).Infow("publishing to Topic", "Topic", req.Topic)
+
+	err := c.validateSendEventToTopicRequest(req)
+	if err != nil {
+		return perror.New(perror.InvalidArgument, err.Error())
+	}
 
 	publishReq := pubsub.PublishRequest{Channel: req.Topic, Data: req.Event}
 
 	messagesSent.WithLabelValues(req.EventName).Inc()
 
 	return c.pubSub.Publish(ctx, publishReq)
+}
+
+func (c *Service) validateSendEventToTopicRequest(req SendEventToTopicRequest) error {
+	if req.Topic == "" {
+		return perror.New(perror.InvalidArgument, "Topic is empty")
+	}
+	if req.Event == nil {
+		return perror.New(perror.InvalidArgument, "Event is empty")
+	}
+	if req.EventName == "" {
+		return perror.New(perror.InvalidArgument, "Event name is empty")
+	}
+	return nil
 }
 
 // PublishToTopics publishes to multiple topics in bulk
@@ -222,6 +283,10 @@ func (c *Service) PublishToTopics(ctx context.Context, req SendEventToTopicsRequ
 	logger.Ctx(ctx).Infow("publishing to topics")
 
 	for _, v := range req.requests {
+		err := c.validateSendEventToTopicRequest(v)
+		if err != nil {
+			return perror.New(perror.InvalidArgument, err.Error())
+		}
 		publishReq := pubsub.PublishRequest{Data: v.Event, Channel: v.Topic}
 		publishReqList = append(publishReqList, publishReq)
 		messagesSent.WithLabelValues(v.EventName).Inc()
@@ -235,6 +300,11 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 	logger.Ctx(ctx).Infow("subscribing to client", "clientID", clientID)
 	var clientSubscription *subscription.Subscription
 	var err error
+
+	if clientID == "" {
+		return nil, perror.New(perror.InvalidArgument, "client ID is empty")
+
+	}
 
 	clientSubscription, err = c.pubSub.AsyncSubscribe(ctx, clientID)
 	if err != nil {

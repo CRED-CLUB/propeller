@@ -35,14 +35,16 @@ type SendEventToClientChannelRequest struct {
 // PopulateFromProto maps model from proto
 func (smu *SendEventToClientChannelRequest) PopulateFromProto(ctx context.Context, protoRequest *pushv1.SendEventToClientChannelRequest) error {
 	smu.clientID = protoRequest.GetClientId()
-	eventBytes, err := proto.Marshal(protoRequest.Event)
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "unable to marshall proto")
-		logger.Ctx(ctx).Error(pErr.Error())
-		return pErr
+	if protoRequest.Event != nil {
+		eventBytes, err := proto.Marshal(protoRequest.Event)
+		if err != nil {
+			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			logger.Ctx(ctx).Error(pErr.Error())
+			return pErr
+		}
+		smu.event = eventBytes
+		smu.eventName = protoRequest.Event.Name
 	}
-	smu.event = eventBytes
-	smu.eventName = protoRequest.Event.Name
 	return nil
 }
 
@@ -58,14 +60,16 @@ type SendEventToClientDeviceChannelRequest struct {
 func (smu *SendEventToClientDeviceChannelRequest) PopulateFromProto(ctx context.Context, protoRequest *pushv1.SendEventToClientDeviceChannelRequest) error {
 	smu.clientID = protoRequest.GetClientId()
 	smu.deviceID = protoRequest.GetDeviceId()
-	eventBytes, err := proto.Marshal(protoRequest.Event)
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "unable to marshall proto")
-		logger.Ctx(ctx).Error(pErr.Error())
-		return pErr
+	if protoRequest.Event != nil {
+		eventBytes, err := proto.Marshal(protoRequest.Event)
+		if err != nil {
+			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			logger.Ctx(ctx).Error(pErr.Error())
+			return pErr
+		}
+		smu.event = eventBytes
+		smu.eventName = protoRequest.Event.Name
 	}
-	smu.event = eventBytes
-	smu.eventName = protoRequest.Event.Name
 	return nil
 }
 
@@ -89,14 +93,16 @@ type SendEventToTopicRequest struct {
 // PopulateFromProto maps model from proto
 func (smt *SendEventToTopicRequest) PopulateFromProto(ctx context.Context, protoRequest *pushv1.SendEventToTopicRequest) error {
 	smt.Topic = protoRequest.GetTopic()
-	eventBytes, err := proto.Marshal(protoRequest.Event)
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "unable to marshall proto")
-		logger.Ctx(ctx).Error(pErr.Error())
-		return pErr
+	if protoRequest.Event != nil {
+		eventBytes, err := proto.Marshal(protoRequest.Event)
+		if err != nil {
+			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			logger.Ctx(ctx).Error(pErr.Error())
+			return pErr
+		}
+		smt.Event = eventBytes
+		smt.EventName = protoRequest.Event.Name
 	}
-	smt.Event = eventBytes
-	smt.EventName = protoRequest.Event.Name
 	return nil
 }
 
