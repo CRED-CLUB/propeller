@@ -35,7 +35,7 @@ Link : [https://central.sonatype.com/artifact/io.github.abhishekvrshny/propeller
 ### Gradle
 
 ```
-implementation group: 'io.github.abhishekvrshny', name: 'propeller', version: '0.0.2'
+implementation group: 'io.github.abhishekvrshny', name: 'propeller', version: '0.0.3'
 ```
 
 {: .note }
