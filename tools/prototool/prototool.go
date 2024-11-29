@@ -17,7 +17,7 @@ func main() {
 	if err != nil {
 		logger.Ctx(ctx).Fatal(err)
 	}
-	err = javaHandler.BuildAndPublish(ctx, "0.0.3")
+	err = javaHandler.BuildAndPublish(ctx, "0.0.5")
 	if err != nil {
 		logger.Ctx(ctx).Fatal(err.Error())
 	}
