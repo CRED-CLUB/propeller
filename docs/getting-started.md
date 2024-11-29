@@ -50,7 +50,7 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
 
 ## Run the broker
 
-Run eithe redis or NATS and update the config accordingly.
+Run either redis or NATS and update the config accordingly.
 
 ### Redis
 ```bash

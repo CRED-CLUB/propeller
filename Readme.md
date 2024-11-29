@@ -3,7 +3,7 @@
 [![CHECKS](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)
 [![GoDoc](https://godoc.org/github.com/CRED-CLUB/propeller?status.svg)](https://godoc.org/github.com/CRED-CLUB/propeller) <a href="https://starcharts.herokuapp.com/CRED-CLUB/propeller"><img alt="Stars" src="https://img.shields.io/github/stars/CRED-CLUB/propeller.svg?style=social"></a>
 
-Propeller is an *opinionated* platform that enabled realtime and bidirectional communication between frontend and backend clients.
+Propeller is an *opinionated* platform that enables realtime and bidirectional communication between frontend and backend clients.
 
 ## The Need
 While polling and REST-style request-response have been the dominant paradigms for client-server communication, they inherently come with limitations that can impact performance, scalability, and user experience.
