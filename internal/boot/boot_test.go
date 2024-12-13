@@ -16,6 +16,9 @@ func TestInitLogging(t *testing.T) {
 		SendTestPayload:        false,
 		SendTestPayloadToTopic: false,
 		Grpc:                   grpcserver.Config{},
+		Logger: logger.Config{
+			Type: "prod",
+		},
 	}
 	err := InitLogging(testConfig)
 	assert.Nil(t, err)
