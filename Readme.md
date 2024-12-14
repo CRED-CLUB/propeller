@@ -1,4 +1,5 @@
 # Propeller 𖣘
+![Coverage](https://img.shields.io/badge/Coverage-12.2%25-red)
 [![Go Report Card](https://goreportcard.com/badge/github.com/CRED-CLUB/propeller)](https://goreportcard.com/report/github.com/CRED-CLUB/propeller)
 [![CHECKS](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)](https://github.com/CRED-CLUB/propeller/actions/workflows/checks.yaml/badge.svg)
 [![GoDoc](https://godoc.org/github.com/CRED-CLUB/propeller?status.svg)](https://godoc.org/github.com/CRED-CLUB/propeller) <a href="https://starcharts.herokuapp.com/CRED-CLUB/propeller"><img alt="Stars" src="https://img.shields.io/github/stars/CRED-CLUB/propeller.svg?style=social"></a>
