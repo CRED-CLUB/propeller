@@ -27,6 +27,7 @@ jobs:
         uses: tj-actions/coverage-badge-go@v2
         with:
           filename: coverage.out
+          target: Readme.md
 
       - name: Build
         run: go build -v ./...
