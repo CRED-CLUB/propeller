@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - chore/badge
 
 jobs:
   build-and-push:
@@ -17,11 +18,18 @@ jobs:
         with:
           go-version: stable
 
+      - name: Run Test
+        run: |
+          go test -v ./... -covermode=count -coverprofile=coverage.out
+          go tool cover -func=coverage.out -o=coverage.out
+
+      - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
+        uses: tj-actions/coverage-badge-go@v2
+        with:
+          filename: coverage.out
+
       - name: Build
         run: go build -v ./...
-
-      - name: Test
-        run: go test -v ./...
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
