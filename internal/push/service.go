@@ -27,7 +27,6 @@ type Service struct {
 	pubSub           pubsub.IPubSub
 	kv               kv.IKV
 	config           config.Config
-	testCancelFunc   context.CancelFunc
 	sessionStartTime time.Time
 }
 
