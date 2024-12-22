@@ -6,7 +6,7 @@ nav_order: 5
 ---
 # Overview
 
-`Propeller` acts as a proxy to send events from the backend services to the frontend clients. It is specifically designed to solve for non gRPC based services.
+`Propeller` acts as a proxy to send events from the backend services to the frontend clients. It is specifically designed to solve problems for non-gRPC-based services.
 
 ![](https://pic.surf/uda)
 
