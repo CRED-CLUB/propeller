@@ -5,6 +5,7 @@ ClientHeader = "x-user-id"
 EnableDeviceSupport = true
 DeviceHeader = "x-device-id"
 DeviceAttributeHeaders = ["x-os", "x-os-version"]
+EnableProfilingHandlers = false
 
 [broker]
     broker = "redis" # broker = "nats" or "redis"

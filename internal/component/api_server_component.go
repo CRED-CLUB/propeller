@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/CRED-CLUB/propeller/internal/component/apiserver"
 	"github.com/CRED-CLUB/propeller/internal/config"
@@ -117,6 +118,10 @@ func (web *APIServer) Start(ctx context.Context) error {
 			"/ws/connect",
 			ws.WebSocketConnect,
 		)
+		if web.config.EnableProfilingHandlers {
+			// debug handlers for profiling
+			m.Handle("/debug/", http.DefaultServeMux)
+		}
 
 		httpSrv.Handler = m
 		return httpSrv.ListenAndServe()
