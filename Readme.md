@@ -29,3 +29,8 @@ Propeller is built on top of the following battle-tested technologies to power r
 # Documentation
 
 Please refer **[https://cred-club.github.io/propeller/](https://cred-club.github.io/propeller/)** for further documentation on getting started, testing, design etc.
+
+# Talk
+Talk on propeller at GopherCon India 2024
+
+[![Talk on propeller at GopherCon India 2024](https://img.youtube.com/vi/QecIZLXT29U/0.jpg)](https://www.youtube.com/watch?v=QecIZLXT29U)
