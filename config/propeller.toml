@@ -22,6 +22,7 @@ DeviceAttributeHeaders = ["x-os", "x-os-version"]
     Address = "0.0.0.0:5011"
     PingIntervalInSec = 20
     PingResponseTimeoutInSec = 10
+    EnableReflection = true 
 
 [Logger]
     Type = "dev" # prod or dev
