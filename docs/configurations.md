@@ -28,6 +28,7 @@ Configuration reference for `propeller.toml`.
 | grpc.Address                       | string          | gRPC server port to bind.                                                                                                                   |
 | grpc.PingIntervalInSec             | integer         | gRPC keepalive configuration. [Reference](https://grpc.io/docs/guides/keepalive/)                                                           |
 | grpc.PingResponseTimeoutInSec      | integer         | gRPC keepalive configuration. [Reference](https://grpc.io/docs/guides/keepalive/)                                                           |
+| grpc.EnableReflection              | bool            | If server refection should be enabled for gRPC server                                                                                       |
 | Logger.type                        | dev/prod        | prod logger prints logs in JSON while dev logger prints in human-friendly format.                                                           |
 | Http.Port                          | integer         | HTTP port to bind for websockets and prometheus metrics endpoint.                                                                           |
 | Features.\<name>                   | string          | Feature flag for a new named feature.                                                                                                       |
