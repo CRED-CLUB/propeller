@@ -25,8 +25,7 @@ jobs:
           make goimports-check
       - name: Run Tests
         run: |
-           go test ./... -covermode=count -coverprofile=coverage.out
-           go tool cover -func=coverage.out -o=coverage-summary.out
+          make test
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
         with:

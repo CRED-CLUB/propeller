@@ -107,3 +107,7 @@ help:
 	@echo "Usage:"
 	@grep -E '^\.PHONY: [a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | sort | sed 's/\.PHONY\: //' | awk 'BEGIN {FS = " ## "}; {printf "\t\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: test ## Run tests with coverage
+test:
+	go test ./... -covermode=count -coverprofile=coverage.out
+	go tool cover -func=coverage.out -o=coverage-summary.out
