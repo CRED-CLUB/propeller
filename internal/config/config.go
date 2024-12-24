@@ -10,16 +10,17 @@ import (
 
 // Config stores application config
 type Config struct {
-	ServiceName            string
-	SendTestPayload        bool
-	SendTestPayloadToTopic bool
-	Broker                 broker.Config
-	Grpc                   grpcserver.Config
-	Features               feature.Config
-	Logger                 logger.Config
-	DeviceAttributeHeaders []string
-	ClientHeader           string
-	DeviceHeader           string
-	EnableDeviceSupport    bool
-	HTTP                   httpserver.HTTPConfig
+	ServiceName             string
+	SendTestPayload         bool
+	SendTestPayloadToTopic  bool
+	Broker                  broker.Config
+	Grpc                    grpcserver.Config
+	Features                feature.Config
+	Logger                  logger.Config
+	DeviceAttributeHeaders  []string
+	ClientHeader            string
+	DeviceHeader            string
+	EnableDeviceSupport     bool
+	HTTP                    httpserver.HTTPConfig
+	EnableProfilingHandlers bool
 }
