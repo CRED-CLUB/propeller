@@ -23,7 +23,7 @@ EnableProfilingHandlers = false
     Address = "0.0.0.0:5011"
     PingIntervalInSec = 20
     PingResponseTimeoutInSec = 10
-    EnableReflection = true 
+    EnableReflection = false 
 
 [Logger]
     Type = "dev" # prod or dev
