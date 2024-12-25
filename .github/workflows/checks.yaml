@@ -4,9 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  tests:
+  checks:
     runs-on: ubuntu-latest
-    container: golang:1.23.3-alpine3.20
     continue-on-error: false
     name: checks
     steps:
@@ -18,9 +17,6 @@ jobs:
         with:
           go-version: stable
           cache: true
-      - name: install prerequisites
-        run: |
-          apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine/latest-stable/community/ build-base gcc make git librdkafka-dev pkgconf curl
       - name: generate proto
         run: |
           make proto-generate
