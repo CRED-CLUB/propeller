@@ -4,18 +4,19 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  tests:
+  checks:
     runs-on: ubuntu-latest
-    container: golang:1.23.3-alpine3.20
     continue-on-error: false
     name: checks
     steps:
       - name: checkout
         id: checkout
         uses: actions/checkout@v3
-      - name: install prerequisites
-        run: |
-          apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine/latest-stable/community/ build-base gcc make git librdkafka-dev pkgconf curl
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: stable
+          cache: true
       - name: generate proto
         run: |
           make proto-generate
@@ -28,6 +29,30 @@ jobs:
       - name: Run Tests
         run: |
           make test
+      - name: Go Coverage Badge  # Pass the `coverage.out` output to this action
+        uses: tj-actions/coverage-badge-go@v2
+        with:
+          filename: coverage-summary.out
+          target: Readme.md
+      - name: Check for README Changes
+        uses: tj-actions/verify-changed-files@v17
+        id: verify-changed-files
+        with:
+          files: Readme.md
+      - name: Commit changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Readme.md
+          git commit -m "chore: Updated coverage badge."
+      - name: Push changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ github.head_ref }}
+          force: true
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
         with:
