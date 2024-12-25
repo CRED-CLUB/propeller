@@ -13,6 +13,11 @@ jobs:
       - name: checkout
         id: checkout
         uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: stable
+          cache: true
       - name: install prerequisites
         run: |
           apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine/latest-stable/community/ build-base gcc make git librdkafka-dev pkgconf curl
