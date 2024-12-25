@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	// "github.com/CRED-CLUB/propeller/internal/config"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
