@@ -51,7 +51,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ github.token }}
-          branch: ${{ github.ref_name }}
+          branch: ${{ github.head_ref }}
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
         with:
