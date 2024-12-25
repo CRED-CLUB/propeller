@@ -8,6 +8,7 @@ import (
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 )
 
 // GrpcServer holds grpc server
@@ -85,6 +86,11 @@ func (s *GrpcServer) newGrpcServer(r registerGrpcHandlers) (*grpc.Server, error)
 			},
 		),
 	)
+
+	// Enable server reflection if specified in propeller.toml
+	if s.config.EnableReflection {
+		reflection.Register(grpcServer)
+	}
 
 	err := r(grpcServer)
 	if err != nil {
