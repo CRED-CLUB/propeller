@@ -77,17 +77,6 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           tags: quay.io/abhishekvrshny/propeller:latest
-      - name: Docker Image Metadata
-        uses: docker/metadata-action@v4
-        with:
-          images: quay.io/abhishekvrshny/propeller
-          tags: |
-            latest
-            ${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ steps.date.outputs.date }}
       - name: Set Build Timestamp
         id: date
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
