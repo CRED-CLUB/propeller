@@ -5,5 +5,5 @@ type Config struct {
 	Address                  string
 	PingIntervalInSec        int
 	PingResponseTimeoutInSec int
-    EnableReflection         bool
+	EnableReflection         bool
 }

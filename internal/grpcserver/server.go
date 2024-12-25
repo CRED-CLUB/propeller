@@ -6,7 +6,7 @@ import (
 	"time"
 
 	// "github.com/CRED-CLUB/propeller/internal/config"
-    grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
@@ -87,11 +87,11 @@ func (s *GrpcServer) newGrpcServer(r registerGrpcHandlers) (*grpc.Server, error)
 			},
 		),
 	)
-   
-    // Enable server reflection if specified in propeller.toml
-    if s.config.EnableReflection {
-        reflection.Register(grpcServer)
-    }
+
+	// Enable server reflection if specified in propeller.toml
+	if s.config.EnableReflection {
+		reflection.Register(grpcServer)
+	}
 
 	err := r(grpcServer)
 	if err != nil {
