@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
       - name: install prerequisites
         run: |
           apk add --update --no-cache --repository https://dl-4.alpinelinux.org/alpine/latest-stable/community/ build-base gcc make git librdkafka-dev pkgconf curl
@@ -23,3 +23,11 @@ jobs:
       - name: goimports-check
         run: |
           make goimports-check
+      - name: Run Tests
+        run: |
+          make test
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage-summary.out
