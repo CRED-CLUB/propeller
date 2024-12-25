@@ -77,6 +77,3 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           tags: quay.io/abhishekvrshny/propeller:latest
-      - name: Set Build Timestamp
-        id: date
-        run: echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
