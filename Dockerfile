@@ -1,6 +1,6 @@
 # Stage 1 - build stage
 ######################################
-FROM golang:1.23.3 as builder
+FROM golang:1.23.3 AS builder
 
 RUN mkdir -p /src
 WORKDIR /src
@@ -12,14 +12,21 @@ RUN make build
 
 # Stage 2 - Binary stage
 ######################################
-FROM golang:1.21.13
+FROM alpine:latest
 
-ENV BINPATH /bin
-WORKDIR $BINPATH/
+# Install dependencies to run the binary
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    libc6-compat \
+    gcompat
+
+RUN mkdir -p /src/config
+
+ENV BINPATH=/bin
+WORKDIR $BINPATH
 
 COPY --from=builder /src/bin/propeller $BINPATH
-COPY --from=builder /src/config/propeller.toml /etc/propeller.toml
-
-RUN rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get update
+COPY --from=builder /src/config/propeller.toml /src/config/propeller.toml
 
 CMD ["./propeller"]
