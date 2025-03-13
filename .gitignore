@@ -63,6 +63,7 @@ Gemfile.lock
 # generated files
 gen/*
 
-# coverage file
+# unit tests related
 coverage.out
 coverage-summary.out
+.tmp/*
