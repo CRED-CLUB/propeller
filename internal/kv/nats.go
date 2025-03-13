@@ -7,28 +7,26 @@ import (
 
 	"github.com/CRED-CLUB/propeller/internal/perror"
 	"github.com/CRED-CLUB/propeller/pkg/logger"
-
-	natsclient "github.com/CRED-CLUB/propeller/pkg/broker/nats"
 )
+
+// NatsKVClient defines the interface for NATS KV operations
+type NatsKVClient interface {
+	Put(ctx context.Context, key string, value []byte) error
+	Get(ctx context.Context, key string) ([]byte, error)
+	Delete(ctx context.Context, key string) error
+}
 
 // Nats ...
 type Nats struct {
-	kv *natsclient.KV
+	kvClient NatsKVClient
 }
 
-// NewNats returns NATS kv client
-func NewNats(ctx context.Context, conn *natsclient.Client) (IKV, error) {
-	stream, err := natsclient.NewJetStream(ctx, conn)
-	if err != nil {
-		pErr := perror.Newf(perror.Internal, "error creating nats jetstream %v", err)
-		logger.Ctx(ctx).Error(pErr.Error())
-		return nil, pErr
+// NewNats returns a new Nats instance that implements IKV
+func NewNats(kvClient NatsKVClient) (IKV, error) {
+	if kvClient == nil {
+		return nil, perror.New(perror.Internal, "kvClient is required")
 	}
-	kv, err := stream.CreateKeyValue(ctx, "bucket")
-	if err != nil {
-		return nil, err
-	}
-	return &Nats{kv}, nil
+	return &Nats{kvClient}, nil
 }
 
 // Store key with values
@@ -57,12 +55,12 @@ func (n *Nats) Store(ctx context.Context, key string, field string, attrs string
 		logger.Ctx(ctx).Error(pErr.Error())
 		return pErr
 	}
-	return n.kv.Put(ctx, key, buf.Bytes())
+	return n.kvClient.Put(ctx, key, buf.Bytes())
 }
 
 // Load values for a key
 func (n *Nats) Load(ctx context.Context, key string) (map[string]string, error) {
-	b, _ := n.kv.Get(ctx, key)
+	b, _ := n.kvClient.Get(ctx, key)
 	buffer := bytes.NewBuffer(b)
 	var attrs map[string]string
 	decoder := gob.NewDecoder(buffer)
@@ -79,7 +77,7 @@ func (n *Nats) Delete(ctx context.Context, key string, fields ...string) error {
 	for _, field := range fields {
 		delete(existingMap, field)
 	}
-	err := n.kv.Delete(ctx, key)
+	err := n.kvClient.Delete(ctx, key)
 	if err != nil {
 		return err
 	}
