@@ -62,3 +62,7 @@ Gemfile.lock
 
 # generated files
 gen/*
+
+# coverage file
+coverage.out
+coverage-summary.out
