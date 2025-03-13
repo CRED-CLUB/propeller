@@ -6,13 +6,13 @@ import (
 	redispkg "github.com/CRED-CLUB/propeller/pkg/broker/redis"
 )
 
-// Redis ...
+// Redis implements IKV interface using Redis
 type Redis struct {
-	redisClient *redispkg.Client
+	redisClient redispkg.IKVClient
 }
 
 // NewRedis returns redis kv client
-func NewRedis(client *redispkg.Client) IKV {
+func NewRedis(client redispkg.IKVClient) IKV {
 	return &Redis{client}
 }
 
