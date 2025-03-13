@@ -1,6 +1,11 @@
 ## Set defaults
 export GO111MODULE := on
 
+# unit tests related
+UNIT_TEST_EXCLUSIONS_FILE := "unit-test.exclusions"
+TMP_DIR := ".tmp"
+PKG_LIST_TMP_FILE := "app.packages"
+
 # Fetch OS info
 GOVERSION=$(shell go version)
 UNAME_OS=$(shell go env GOOS)
@@ -107,7 +112,12 @@ help:
 	@echo "Usage:"
 	@grep -E '^\.PHONY: [a-zA-Z_-]+.*?## .*$$' $(MAKEFILE_LIST) | sort | sed 's/\.PHONY\: //' | awk 'BEGIN {FS = " ## "}; {printf "\t\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: test-unit-prepare
+test-unit-prepare:
+	@mkdir -p $(TMP_DIR)
+	@go list ./... | grep -Ev 'tests|mocks|statik|rpc|tools' > $(TMP_DIR)/$(PKG_LIST_TMP_FILE)
+
 .PHONY: test ## Run tests with coverage
-test:
-	go test ./... -covermode=count -coverprofile=coverage.out
+test: test-unit-prepare
+	go test --count=1 -coverpkg=$(shell comm -23 $(TMP_DIR)/$(PKG_LIST_TMP_FILE) $(UNIT_TEST_EXCLUSIONS_FILE) | xargs | sed -e 's/ /,/g') -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out -o=coverage-summary.out
