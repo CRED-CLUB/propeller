@@ -21,10 +21,20 @@ type IRedis interface {
 	RemoveSubscription(ctx context.Context, channel string, s broker.ISubscription) error
 }
 
-// Client holds redis client
+// IKVClient defines the interface for Redis key-value operations
+type IKVClient interface {
+	HSet(ctx context.Context, key string, values ...interface{}) error
+	HGetAll(ctx context.Context, key string) (map[string]string, error)
+	Delete(ctx context.Context, key string, fields ...string) error
+}
+
+// Client holds redis client and implements IKVClient
 type Client struct {
 	client redis.UniversalClient
 }
+
+// Ensure Client implements IKVClient
+var _ IKVClient = (*Client)(nil)
 
 // NewClient returns a new redis client
 func NewClient(config Config) *Client {
