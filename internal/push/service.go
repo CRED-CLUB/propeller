@@ -165,7 +165,8 @@ func (c *Service) receiveDeviceResponse(ctx context.Context, s *subscription.Sub
 			msg := topicEvent.Event
 			err := proto.Unmarshal(msg, protoEvent)
 			if err != nil {
-				return
+				// Don't return on unmarshal error, just continue
+				continue
 			}
 			responses[string(protoEvent.GetData().Value)] = true
 			if receivedSoFar == expectedCount {
@@ -174,6 +175,7 @@ func (c *Service) receiveDeviceResponse(ctx context.Context, s *subscription.Sub
 			}
 		case err := <-s.ErrChan:
 			logger.Ctx(ctx).Errorw("error in subscriber", "error", err.Error())
+			// Continue processing after logging the error
 		case <-timeout.C:
 			ch <- responses
 			return
@@ -302,7 +304,12 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 
 	if clientID == "" {
 		return nil, perror.New(perror.InvalidArgument, "client ID is empty")
+	}
 
+	if c.config.EnableDeviceSupport && device != nil {
+		if device.ID == "" {
+			return nil, perror.New(perror.InvalidArgument, "Device ID is empty")
+		}
 	}
 
 	clientSubscription, err = c.pubSub.AsyncSubscribe(ctx, clientID)
@@ -316,9 +323,13 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 			return nil, err
 		}
 		v, err := json.Marshal(device.Attributes)
+		if err != nil {
+			return nil, err
+		}
 		err = c.kv.Store(ctx, clientID, device.ID, string(v))
 		if err != nil {
 			logger.Ctx(ctx).Errorf("error in storing device details %+v", err)
+			return nil, err
 		}
 	}
 
@@ -337,6 +348,12 @@ func (c *Service) AsyncClientSubscribe(ctx context.Context, clientID string, dev
 // TopicSubscribe to the topic
 func (c *Service) TopicSubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
 	logger.Ctx(ctx).Infow("subscribing", "topic", topic)
+	if topic == "" {
+		return perror.New(perror.InvalidArgument, "Topic is empty")
+	}
+	if clientSubscription == nil {
+		return perror.New(perror.InvalidArgument, "Subscription is nil")
+	}
 	err := c.pubSub.AddSubscription(ctx, topic, clientSubscription)
 	if err != nil {
 		return err
@@ -347,6 +364,12 @@ func (c *Service) TopicSubscribe(ctx context.Context, topic string, clientSubscr
 // TopicUnsubscribe to unsubscribe from a topic
 func (c *Service) TopicUnsubscribe(ctx context.Context, topic string, clientSubscription *subscription.Subscription) error {
 	logger.Ctx(ctx).Debugw("un-subscribing", "topic", topic)
+	if topic == "" {
+		return perror.New(perror.InvalidArgument, "Topic is empty")
+	}
+	if clientSubscription == nil {
+		return perror.New(perror.InvalidArgument, "Subscription is nil")
+	}
 	err := c.pubSub.RemoveSubscription(ctx, topic, clientSubscription)
 	if err != nil {
 		return err
@@ -356,7 +379,7 @@ func (c *Service) TopicUnsubscribe(ctx context.Context, topic string, clientSubs
 
 // ClientUnsubscribe unsubscribes a client
 func (c *Service) ClientUnsubscribe(ctx context.Context, clientID string, subscription *subscription.Subscription, device *Device) error {
-	if c.config.EnableDeviceSupport {
+	if c.config.EnableDeviceSupport && device != nil {
 		err := c.kv.Delete(ctx, clientID, device.ID)
 		if err != nil {
 			logger.Ctx(ctx).Errorf("error in deleting device details %+v", err.Error())
