@@ -355,7 +355,43 @@ func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.Push
 				ErrorType: "",
 			},
 		}}})
+	case *pushv1.ChannelRequest_ChannelEvent:
+
+		// Referenced and adapted from the SendEventToTopic function for consistent 
+		// context handling, logging, and request publishing flow.
+		event := receivedRequest.GetChannelEvent().GetEvent()
+		topic := receivedRequest.GetChannelEvent().GetTopic()
+
+		fmt.Printf("event: %v\n", event)
+		fmt.Printf("topic: %v\n", topic)
+
+		req := &pushv1.SendEventToTopicRequest{
+			Topic: topic,
+			Event: event,
+		}
+	
+		derivedCtx := context.WithValue(ctx, logger.CtxKeyType("meta"), map[string]string{
+			"topic":     req.GetTopic(),
+			"eventName": req.GetEvent().GetName(),
+		})
+
+		loggerCtx := context.WithValue(derivedCtx, logger.CtxKey, logger.WithContext(derivedCtx, []logger.CtxKeyType{"meta"}))
+	
+		reqModel := push.SendEventToTopicRequest{}
+	
+		err := reqModel.PopulateFromProto(loggerCtx, req)
+		if err != nil {
+			fmt.Println("Error in Populating from Proto : ",err)
+			return
+		}
+	
+		err = ps.svc.PublishToTopic(loggerCtx, reqModel)
+		if err != nil {
+			fmt.Println("Error in PublishingToTopic : ",err)
+			return 
+		}
 	}
+	
 }
 
 func receiveLoop(ctx context.Context, rc chan *pushv1.ChannelRequest, srv pushv1.PushService_ChannelServer) {
