@@ -382,14 +382,39 @@ func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.Push
 		err := reqModel.PopulateFromProto(loggerCtx, req)
 		if err != nil {
 			fmt.Println("Error in Populating from Proto : ",err)
+			_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_ChannelEventAck{ChannelEventAck: &pushv1.ChannelEventAck{
+				Status: &pushv1.ResponseStatus{
+					Success:   false,
+					ErrorCode: "",
+					Message:   map[string]string{"message": err.Error()},
+					ErrorType: "",
+				},
+			}}})
 			return
 		}
 	
 		err = ps.svc.PublishToTopic(loggerCtx, reqModel)
 		if err != nil {
-			fmt.Println("Error in PublishingToTopic : ",err)
+			fmt.Println("Error in PublisingToTopic : ",err)
+			_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_ChannelEventAck{ChannelEventAck: &pushv1.ChannelEventAck{
+				Status: &pushv1.ResponseStatus{
+					Success:   true,
+					ErrorCode: "",
+					Message:   map[string]string{"message": err.Error()},
+					ErrorType: "",
+				},
+			}}})
 			return 
 		}
+
+		_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_ChannelEventAck{ChannelEventAck: &pushv1.ChannelEventAck{
+			Status: &pushv1.ResponseStatus{
+				Success:   true,
+				ErrorCode: "",
+				Message:   nil,
+				ErrorType: "",
+			},
+		}}})
 	}
 	
 }
