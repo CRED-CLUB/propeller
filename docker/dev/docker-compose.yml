@@ -10,7 +10,7 @@ services:
       - dev_propeller-network
     command: ["-js"]  # Enable JetStream
   redis:
-    image: 'bitnami/redis:6.2.7'
+    image: 'soldevelo/redis:6.2.16'
     container_name: redis
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
