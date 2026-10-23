@@ -59,10 +59,10 @@ func (ws *WebSocketServerWrapper) Recv() (*pushv1.ChannelRequest, error) {
 	err := ws.conn.ReadJSON(&req)
 	if err != nil {
 		ws.CancelFunc()
-		return nil, nil
+		return nil, err
 	}
-	logger.Ctx(ws.Ctx).Debugf("receive message from server: %v, %v", req, err)
-	return &req, err
+	logger.Ctx(ws.Ctx).Debugf("receive message from server: %v, %v", &req, err)
+	return &req, nil
 }
 
 // Context ...
@@ -90,12 +90,19 @@ func (ws *WebSocketServerWrapper) WebSocketConnect(w http.ResponseWriter, r *htt
 	for k, v := range r.Header {
 		mds = metadata.Join(metadata.Pairs(k, v[0]), mds)
 	}
-	ws.Ctx = metadata.NewIncomingContext(ws.Ctx, mds)
 
-	ws.conn = conn
+	connCtx, connCancel := context.WithCancel(metadata.NewIncomingContext(ws.Ctx, mds))
+	defer connCancel()
+
+	connWrapper := &WebSocketServerWrapper{
+		PushServer: ws.PushServer,
+		conn:       conn,
+		Ctx:        connCtx,
+		CancelFunc: connCancel,
+	}
 
 	// Call the existing Connect method
-	if err := ws.PushServer.Channel(ws); err != nil {
-		logger.Ctx(r.Context()).Errorw("WebSocket connection error", "error", err)
+	if err := ws.PushServer.Channel(connWrapper); err != nil {
+		logger.Ctx(connCtx).Errorw("WebSocket connection error", "error", err)
 	}
 }
