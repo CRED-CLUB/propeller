@@ -64,10 +64,25 @@ func (s *GrpcServer) Run(ctx context.Context) error {
 		return err
 	}
 
+	stopped := make(chan struct{})
+	defer close(stopped)
+
 	// wait for ctx.Done() in a goroutine and stop the server gracefully
 	go func() {
-		<-ctx.Done()
-		s.Server.GracefulStop()
+		select {
+		case <-ctx.Done():
+			gracefulDone := make(chan struct{})
+			go func() {
+				s.Server.GracefulStop()
+				close(gracefulDone)
+			}()
+			select {
+			case <-gracefulDone:
+			case <-time.After(10 * time.Second):
+				s.Server.Stop()
+			}
+		case <-stopped:
+		}
 	}()
 
 	// Start gRPC server

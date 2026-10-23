@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/CRED-CLUB/propeller/internal/pubsub/subscription"
 
@@ -25,9 +26,9 @@ func NewPushServer(svc *push.Service, config config.Config) *PushServer {
 // PushServer implements push web component
 type PushServer struct {
 	pushv1.UnimplementedPushServiceServer
-	svc            *push.Service
-	conf           config.Config
-	testCancelFunc context.CancelFunc
+	svc         *push.Service
+	conf        config.Config
+	testCancels sync.Map
 }
 
 // Channel to the push server and receive streaming response
@@ -65,6 +66,8 @@ func (ps *PushServer) Channel(srv pushv1.PushService_ChannelServer) error {
 	}})
 	if err != nil {
 		logger.Ctx(loggerCtx).Errorw("error in sending response ack", "error", err.Error())
+		_ = ps.svc.ClientUnsubscribe(context.WithoutCancel(loggerCtx), clientID, clientSubscription, device)
+		return err
 	}
 
 	for {
@@ -112,10 +115,17 @@ func (ps *PushServer) Channel(srv pushv1.PushService_ChannelServer) error {
 			}})
 			if err != nil {
 				logger.Ctx(loggerCtx).Errorw("error in send", "error", err.Error())
+				_ = ps.svc.ClientUnsubscribe(context.WithoutCancel(loggerCtx), clientID, clientSubscription, device)
+				return err
 			}
 			ps.svc.ConfirmEventReceipt(loggerCtx, protoEvent.Name)
 			logger.Ctx(loggerCtx).Debugw("sent event", "eventName", protoEvent.GetName())
-		case req := <-rc:
+		case req, ok := <-rc:
+			if !ok {
+				logger.Ctx(loggerCtx).Debugw("client stream closed")
+				_ = ps.svc.ClientUnsubscribe(context.WithoutCancel(loggerCtx), clientID, clientSubscription, device)
+				return nil
+			}
 			logger.Ctx(loggerCtx).Infow("received from client", "req", req)
 			ps.HandleReceivedPayload(loggerCtx, srv, req, clientSubscription)
 		}
@@ -294,8 +304,9 @@ func (ps *PushServer) GetClientActiveDevices(ctx context.Context, req *pushv1.Ge
 
 // HandleReceivedPayload handles the received requests from the client
 func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.PushService_ChannelServer, receivedRequest *pushv1.ChannelRequest, clientSubscription *subscription.Subscription) {
-	testCtx, testCancelFunc := context.WithCancel(ctx)
-	ps.testCancelFunc = testCancelFunc
+	if receivedRequest == nil || receivedRequest.Request == nil {
+		return
+	}
 
 	switch receivedRequest.Request.(type) {
 	case *pushv1.ChannelRequest_TopicSubscriptionRequest:
@@ -315,7 +326,9 @@ func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.Push
 			}}})
 			return
 		}
-		if ps.conf.SendTestPayloadToTopic == true {
+		if ps.conf.SendTestPayloadToTopic {
+			testCtx, testCancel := context.WithCancel(ctx)
+			ps.testCancels.Store(topic, testCancel)
 			go ps.svc.TriggerTestPayloadToTopic(testCtx, topic)
 		}
 		_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicSubscriptionRequestAck{TopicSubscriptionRequestAck: &pushv1.TopicSubscriptionRequestAck{
@@ -343,8 +356,10 @@ func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.Push
 			}}})
 			return
 		}
-		if ps.conf.SendTestPayloadToTopic == true {
-			ps.testCancelFunc()
+		if ps.conf.SendTestPayloadToTopic {
+			if cancel, ok := ps.testCancels.LoadAndDelete(topic); ok {
+				cancel.(context.CancelFunc)()
+			}
 		}
 		_ = srv.Send(&pushv1.ChannelResponse{Response: &pushv1.ChannelResponse_TopicUnsubscriptionRequestAck{TopicUnsubscriptionRequestAck: &pushv1.TopicUnsubscriptionRequestAck{
 			Topic: topic,
@@ -359,20 +374,19 @@ func (ps *PushServer) HandleReceivedPayload(ctx context.Context, srv pushv1.Push
 }
 
 func receiveLoop(ctx context.Context, rc chan *pushv1.ChannelRequest, srv pushv1.PushService_ChannelServer) {
+	defer close(rc)
 	for {
+		req, err := srv.Recv()
+		if err != nil {
+			if err != io.EOF {
+				logger.Ctx(ctx).Debugw("error in recv", "error", err.Error())
+			}
+			return
+		}
 		select {
+		case rc <- req:
 		case <-ctx.Done():
 			return
-		default:
-			req, err := srv.Recv()
-			if err != nil {
-				if err == io.EOF {
-					continue
-				}
-				logger.Ctx(ctx).Debugw("error in recv", "error", err.Error())
-				return
-			}
-			rc <- req
 		}
 	}
 }
