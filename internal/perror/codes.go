@@ -10,7 +10,7 @@ const (
 	OK Code = 0
 	// Canceled indicates the operation was canceled (typically by the caller).
 	Canceled Code = 1
-	// Unknown error errors raised by APIs that do not return enough error information
+	// Unknown error. Errors raised by APIs that do not return enough error information
 	// may be converted to this error.
 	Unknown Code = 2
 	// InvalidArgument indicates client specified an invalid argument.

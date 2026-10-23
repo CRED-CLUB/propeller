@@ -38,7 +38,7 @@ func (smu *SendEventToClientChannelRequest) PopulateFromProto(ctx context.Contex
 	if protoRequest.Event != nil {
 		eventBytes, err := proto.Marshal(protoRequest.Event)
 		if err != nil {
-			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			pErr := perror.Newf(perror.Internal, "unable to marshal proto")
 			logger.Ctx(ctx).Error(pErr.Error())
 			return pErr
 		}
@@ -63,7 +63,7 @@ func (smu *SendEventToClientDeviceChannelRequest) PopulateFromProto(ctx context.
 	if protoRequest.Event != nil {
 		eventBytes, err := proto.Marshal(protoRequest.Event)
 		if err != nil {
-			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			pErr := perror.Newf(perror.Internal, "unable to marshal proto")
 			logger.Ctx(ctx).Error(pErr.Error())
 			return pErr
 		}
@@ -96,7 +96,7 @@ func (smt *SendEventToTopicRequest) PopulateFromProto(ctx context.Context, proto
 	if protoRequest.Event != nil {
 		eventBytes, err := proto.Marshal(protoRequest.Event)
 		if err != nil {
-			pErr := perror.Newf(perror.Internal, "unable to marshall proto")
+			pErr := perror.Newf(perror.Internal, "unable to marshal proto")
 			logger.Ctx(ctx).Error(pErr.Error())
 			return pErr
 		}

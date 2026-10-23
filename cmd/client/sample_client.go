@@ -28,12 +28,12 @@ func main() {
 	var transportCredentials credentials.TransportCredentials
 	transportCredentials = insecure.NewCredentials()
 
-	// connect to the grpc streaming grpcserver
+	// connect to the grpc streaming server
 	conn, err := grpc.Dial(*endpoint, grpc.WithTransportCredentials(
 		transportCredentials,
 	))
 	if err != nil {
-		log.Fatalf("unable to start grpc grpcserver %s", err.Error())
+		log.Fatalf("unable to start grpc server %s", err.Error())
 	}
 	defer func(conn *grpc.ClientConn) {
 		err := conn.Close()
@@ -172,7 +172,7 @@ func connect(ctx context.Context, userID string, c pushv1.PushServiceClient, sub
 				return
 			}
 			if err != nil {
-				log.Fatalf("Failed to receive a note : %v", err)
+				log.Fatalf("Failed to receive a message : %v", err)
 			}
 			switch in.Response.(type) {
 			case *pushv1.ChannelResponse_ChannelEvent:

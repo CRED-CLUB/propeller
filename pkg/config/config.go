@@ -82,12 +82,12 @@ func NewConfig(opts Options) *Config {
 }
 
 // Load reads environment specific configurations and along with the defaults
-// unmarshalls into config.
+// unmarshals into config.
 func (c *Config) Load(fileName string, config interface{}) error {
 	return c.loadByConfigName(fileName, config)
 }
 
-// loadByConfigName reads configuration from file and unmarshalls into config.
+// loadByConfigName reads configuration from file and unmarshals into config.
 func (c *Config) loadByConfigName(configName string, config interface{}) error {
 	c.viper.SetEnvPrefix(strings.ToUpper("PROPELLER"))
 	c.viper.SetConfigName(configName)
