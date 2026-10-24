@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// IRedis is an interface over redis pubusb and streams
+// IRedis is an interface over redis pubsub and streams
 type IRedis interface {
 	Publish(ctx context.Context, publishRequest PublishRequest) error
 	PublishBulk(ctx context.Context, publishRequest []PublishRequest) error
